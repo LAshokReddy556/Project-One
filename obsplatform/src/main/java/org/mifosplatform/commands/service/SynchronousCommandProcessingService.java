@@ -1006,6 +1006,8 @@ public class SynchronousCommandProcessingService implements CommandProcessingSer
 	        	             handler = this.applicationContext.getBean("updatePaypalProfileStatusCommandhandler", NewCommandSourceHandler.class);
 					     } else if (wrapper.isdeleteRecurringBilling()) {
 	        	             handler = this.applicationContext.getBean("deleteRecurringBillingCommandhandler", NewCommandSourceHandler.class);
+					     } else if (wrapper.isCardPaymentGateway()) {
+	        	             handler = this.applicationContext.getBean("cardPaymentCommandhandler", NewCommandSourceHandler.class);
 					     } 
 					     
 				}else if(wrapper.isHardwareSwapping()){

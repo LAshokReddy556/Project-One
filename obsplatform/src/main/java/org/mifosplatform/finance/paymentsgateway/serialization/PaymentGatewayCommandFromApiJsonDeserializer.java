@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.mifosplatform.finance.paymentsgateway.data.RecurringPaymentTransactionTypeConstants;
 import org.mifosplatform.infrastructure.configuration.domain.ConfigurationConstants;
 import org.mifosplatform.infrastructure.core.data.ApiParameterError;
 import org.mifosplatform.infrastructure.core.data.DataValidatorBuilder;
@@ -41,6 +42,10 @@ public class PaymentGatewayCommandFromApiJsonDeserializer {
 			"clientId", "emailId", "transactionId", "source", "otherData", "device", "currency","dateFormat","locale",
 			"paytermCode","planCode","contractPeriod","value","verificationCode","screenName",
 			"renewalPeriod", "description","cardType","cardNumber","status","error"));
+	
+	private final Set<String> cardSupportedParameters = new HashSet<String>(Arrays.asList("cardNumber", "cardType", 
+			"expiryDate", "cardCVV", "nameOnCard","source","custom","clientId", "priceId", "finalAmount", 
+			"billingCycles", "billingPeriod", "billingFrequency", "description", "currencyCode", "locale"));
 	
     private final FromJsonHelper fromApiJsonHelper;
     
@@ -188,6 +193,54 @@ public class PaymentGatewayCommandFromApiJsonDeserializer {
 		
 		
 		throwExceptionIfValidationWarningsExist(dataValidationErrors);
+	}
+
+	public void validateForCardPayment(String json) {
+		
+
+		if (StringUtils.isBlank(json)) {
+			throw new InvalidJsonException();
+		}
+
+		final Type typeOfMap = new TypeToken<Map<String, Object>>() {
+		}.getType();
+		fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, cardSupportedParameters);
+
+		final List<ApiParameterError> dataValidationErrors = new ArrayList<ApiParameterError>();
+		final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(
+				dataValidationErrors).resource("cardPayment");
+
+		final JsonElement element = fromApiJsonHelper.parse(json);
+	
+		final String cardNumber = fromApiJsonHelper.extractStringNamed(RecurringPaymentTransactionTypeConstants.CARD_NUMBER, element);
+		baseDataValidator.reset().parameter("cardNumber").value(cardNumber).notBlank().notExceedingLengthOf(100);
+		
+		final String cardType = fromApiJsonHelper.extractStringNamed(RecurringPaymentTransactionTypeConstants.CARD_TYPE, element);
+		baseDataValidator.reset().parameter("cardType").value(cardType).notBlank().notExceedingLengthOf(100);
+		
+		final String cardExpiryDate = fromApiJsonHelper.extractStringNamed(RecurringPaymentTransactionTypeConstants.CARD_EXPIRY_DATE, element);
+		baseDataValidator.reset().parameter("cardExpiryDate").value(cardExpiryDate).notBlank().notExceedingLengthOf(100);
+		
+		final String cardCVV = fromApiJsonHelper.extractStringNamed(RecurringPaymentTransactionTypeConstants.CARD_CVV, element);
+		baseDataValidator.reset().parameter("cardCVV").value(cardCVV).notBlank().notExceedingLengthOf(100);
+		
+		final String nameOnCard = fromApiJsonHelper.extractStringNamed(RecurringPaymentTransactionTypeConstants.NAME_ON_CARD, element);
+		baseDataValidator.reset().parameter("nameOnCard").value(nameOnCard).notBlank().notExceedingLengthOf(100);
+		
+		final String source = fromApiJsonHelper.extractStringNamed("source", element);
+		baseDataValidator.reset().parameter("source").value(source).notBlank().notExceedingLengthOf(100);
+		
+		final Long clientId = fromApiJsonHelper.extractLongNamed("clientId", element);
+		baseDataValidator.reset().parameter("clientId").value(clientId).notBlank();
+		
+		final Long billingFrequency = fromApiJsonHelper.extractLongNamed("billingFrequency", element);
+		baseDataValidator.reset().parameter("billingFrequency").value(billingFrequency).notBlank().notExceedingLengthOf(2);
+		
+		final String billingPeriod = fromApiJsonHelper.extractStringNamed("billingPeriod", element);
+		baseDataValidator.reset().parameter("billingPeriod").value(billingPeriod).notBlank();
+		
+		throwExceptionIfValidationWarningsExist(dataValidationErrors);
+			
 	}
 
 }

@@ -37,5 +37,7 @@ public interface PaymentGatewayRecurringWritePlatformService {
 	public Long updatePaypalRecurringBilling(String profileId);
 
 	public CommandProcessingResult deleteRecurringBilling(JsonCommand command);
-	
+
+	public CommandProcessingResult cardPayment(JsonCommand command);
+
 }

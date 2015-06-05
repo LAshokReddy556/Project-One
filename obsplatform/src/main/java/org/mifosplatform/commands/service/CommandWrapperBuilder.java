@@ -2914,6 +2914,12 @@ public class CommandWrapperBuilder {
 		return this;
 	}
 
+	public CommandWrapperBuilder cardPayment() {
+		this.actionName = "CARD";
+		this.entityName = "PAYMENTGATEWAY";
+		this.href = "";
+		return this;
+	}
 }
 
 

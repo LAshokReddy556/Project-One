@@ -740,8 +740,18 @@ public class PaymentGatewayApiResource {
 	}	 
 	
 	/**
-	 * This method is using for posting data to create payment using paypal
+	 * This method is using for Handling Paypal IPN Requests. 
+	 * 
+	 * i) We have to Verify the Paypal IPN Request by Re-Sending the Received Parameters to Paypal IPN Server. 
+	 * 
+	 * ii) Paypal IPN Server Checks Whether IPN Server Sending Request Parameters and 
+	 * Received Parameters(Which are Sending by OBS on (i)). 
+	 * 
+	 * iii) If Both Request Parameters are Match, Then Only Paypal Server Send "VERIFIED" as Response
+	 * 
+	 * iv) If Both are mis-match, Then Send "INVALID" as Response.
 	 */
+	
 	@POST
 	@Path("ipnhandler")
 	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
@@ -847,6 +857,28 @@ public class PaymentGatewayApiResource {
 		}
 
 	}
+	
+	/**
+	 * This method is using for posting data to create payment using Neteller
+	 */
+	@POST
+	@Path("cardPayment")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String cardPaymentProcessing(final String apiRequestBodyAsJson) {
+		
+		try {
+			
+			final CommandWrapper commandRequest = new CommandWrapperBuilder().cardPayment().withJson(apiRequestBodyAsJson).build();
+			final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
+			
+			Map<String, Object> output = result.getChanges();
+			
+		} catch (Exception e) {
+			
+		}
+		return "Success";
+	}	 
 	 
 }
 

@@ -1311,4 +1311,9 @@ public class CommandWrapper {
 		public boolean isdeleteRecurringBilling() {
 			return this.actionName.equalsIgnoreCase("DELETERECURRINGBILLING");
 		}
+
+		public boolean isCardPaymentGateway() {
+			return this.actionName.equalsIgnoreCase("CARD");
+		}
+		
 }

@@ -41,6 +41,7 @@ public class EventActionConstants {
 	public static final String ACTION_ACTIVE_LIVE_EVENT = "Active Live Event";
 	public static final String ACTION_INACTIVE_LIVE_EVENT = "InActive Live Event";
 	public static final String ACTION_CREATE_PAYMENT="Create Payment";
+	public static final String ACTION_CARD_PAYMENT="Card Payment";
 
 	public static final String ACTION_RECURRING_DISCONNECT="RecurringDisconnect";
 	public static final String ACTION_RECURRING_RECONNECTION="RecurringReconnection";

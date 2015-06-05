@@ -191,7 +191,9 @@ dependencies {
                 [group: 'me.legrange',name: 'mikrotik', version: '2.0.2'],
                 [group: 'com.github.spullara.mustache.java', name: 'compiler', version: '0.8.12'],
                 [group: 'com.paypal.sdk',name: 'merchantsdk', version: '2.5.106'],
-                [group: 'net.sf.jasperreports',name: 'jasperreports-fonts', version:'5.6.1']
+                [group: 'net.sf.jasperreports',name: 'jasperreports-fonts', version:'5.6.1'],
+                [group: 'org.bouncycastle',name: 'bcprov-jdk15on', version:'1.47'],
+                [group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2']
                        
  	        )
 

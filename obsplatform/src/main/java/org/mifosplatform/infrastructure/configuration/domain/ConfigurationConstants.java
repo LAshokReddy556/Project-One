@@ -102,9 +102,10 @@ public class ConfigurationConstants {
 	public static final String GLOBALPAY_CHARSET = "application/soap+xml; charset=utf-8";
 	
 	public static final String CONFIG_PROPERTY_SMS= "sms-configuration";
+	public static final String PAYPAL_URL_NAME= "paypalUrl";
 	
-	
-
+    //Encryption key config
+	public static final String AES_ENCRYPTION_KEY = "key-value";
 }
 
 
