@@ -30,10 +30,9 @@ public class ChargeCodeData {
 	public ChargeCodeData() {
 	}
 
-	public ChargeCodeData(final List<ChargeCodeData> chargeCodeData,
-			final List<ChargeTypeData> chargeType,
-			final List<DurationTypeData> durationType,
+	public ChargeCodeData(final List<ChargeCodeData> chargeCodeData,final List<ChargeTypeData> chargeType,final List<DurationTypeData> durationType,
 			final List<BillFrequencyCodeData> billFrequencyCodeData) {
+		
 		this.chargeCodeData = chargeCodeData;
 		this.chargeTypeData = chargeType;
 		this.durationTypeData = durationType;
@@ -74,8 +73,7 @@ public class ChargeCodeData {
 		this.units = units;
 	}
 
-	public ChargeCodeData(Long id, String contractType,Integer contractDuration, String chargeType,
-			Integer chargeDuration, BigDecimal price) {
+	public ChargeCodeData(Long id, String contractType,Integer contractDuration, String chargeType,Integer chargeDuration, BigDecimal price) {
              
 		this.id = id;
 		this.contractType = contractType;

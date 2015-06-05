@@ -192,7 +192,10 @@ public class PropertyWriteplatformServiceImpl implements PropertyWriteplatformSe
 			final String newPropertyCode=command.stringValueOfParameterNamed("newPropertyCode");
 			final BigDecimal shiftChargeAmount=command.bigDecimalValueOfParameterNamed("shiftChargeAmount");
 			final String chargeCode = command.stringValueOfParameterNamed("chargeCode");
-			Address clientAddress = this.addressRepository.findOneByAddressNo(clientId,oldPropertyCode);
+			Address clientAddress=null;
+			if(oldPropertyCode!=null&&!oldPropertyCode.isEmpty()){
+				clientAddress = this.addressRepository.findOneByAddressNo(clientId,oldPropertyCode);
+			}
 			PropertyTransactionHistory transactionHistory=null;
 			if(clientAddress !=null){
 			final PropertyMaster oldPropertyMaster=this.propertyMasterRepository.findoneByPropertyCode(oldPropertyCode);
@@ -227,7 +230,27 @@ public class PropertyWriteplatformServiceImpl implements PropertyWriteplatformSe
 			 transactionHistory = new PropertyTransactionHistory(DateUtils.getLocalDateOfTenant(),newpropertyMaster.getId(),
 			    		 CodeNameConstants.CODE_PROPERTY_SERVICE_TRANSFER,newpropertyMaster.getClientId(),newpropertyMaster.getPropertyCode());
 			    this.propertyHistoryRepository.save(transactionHistory);
-		 }else{
+		 } else if(clientAddress==null&&newPropertyCode!=null){
+			 
+			 final PropertyMaster newpropertyMaster=this.propertyMasterRepository.findoneByPropertyCode(newPropertyCode); 
+			 Address clientAddr = this.addressRepository.findOneByClientId(clientId);
+			    newpropertyMaster.setClientId(clientId);
+			    newpropertyMaster.setStatus(CodeNameConstants.CODE_PROPERTY_OCCUPIED);
+			    this.propertyMasterRepository.saveAndFlush(newpropertyMaster);
+			    clientAddr.setAddressNo(newpropertyMaster.getPropertyCode());
+			    clientAddr.setStreet(newpropertyMaster.getStreet());
+			    clientAddr.setCity(newpropertyMaster.getPrecinct());
+			    clientAddr.setState(newpropertyMaster.getState());
+			    clientAddr.setCountry(newpropertyMaster.getCountry());
+			    clientAddr.setZip(newpropertyMaster.getPoBox());
+			    this.addressRepository.save(clientAddr);
+			    
+			    transactionHistory = new PropertyTransactionHistory(DateUtils.getLocalDateOfTenant(),newpropertyMaster.getId(),
+			    		 CodeNameConstants.CODE_PROPERTY_SERVICE_TRANSFER,newpropertyMaster.getClientId(),newpropertyMaster.getPropertyCode());
+			    this.propertyHistoryRepository.save(transactionHistory);
+			 
+		 }
+		 else{
 				 throw new PropertyMasterNotFoundException(clientId,oldPropertyCode);
 			 }
 		   //call one time invoice	

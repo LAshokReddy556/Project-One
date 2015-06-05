@@ -157,7 +157,7 @@ public class RadiusReadPlatformServiceImp implements RadiusReadPlatformService {
 			String encodedPassword = new String("");
 			String nasData = this.processRadiusPost(url, encodedPassword,jsonData);
 			
-			JSONObject objectResponce = new JSONObject(nasData);
+			/*JSONObject objectResponce = new JSONObject(nasData);
 			
 			if(objectResponce.getString("resultData").equalsIgnoreCase("success")){
 				
@@ -190,7 +190,7 @@ public class RadiusReadPlatformServiceImp implements RadiusReadPlatformService {
 		        	//updatedata.append(jsonDataOfNew);
 		        	writeFileData(CONFIGURATION_FILE_LOCATION, jsonDataOfNew);
 		        }
-			}
+			}*/
 			
 			/**
 			 * @Deprecated
@@ -218,9 +218,6 @@ public class RadiusReadPlatformServiceImp implements RadiusReadPlatformService {
 			e.printStackTrace();
 			return e.getMessage();
 		} catch (IOException e) {
-			e.printStackTrace();
-			return e.getMessage();
-		} catch (JSONException e) {
 			e.printStackTrace();
 			return e.getMessage();
 		}

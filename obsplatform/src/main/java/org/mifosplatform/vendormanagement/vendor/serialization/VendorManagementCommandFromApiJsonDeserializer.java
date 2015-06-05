@@ -64,10 +64,10 @@ public final class VendorManagementCommandFromApiJsonDeserializer {
         baseDataValidator.reset().parameter("contactName").value(contactName).notBlank().notExceedingLengthOf(100);
         
         final String vendormobileNo = fromApiJsonHelper.extractStringNamed("vendormobileNo", element);
-        baseDataValidator.reset().parameter("vendormobileNo").value(vendormobileNo).notBlank().notExceedingLengthOf(20);
+        baseDataValidator.reset().parameter("vendormobileNo").value(vendormobileNo).notBlank().notExceedingLengthOf(13);
         
         final String vendorLandlineNo = fromApiJsonHelper.extractStringNamed("vendorLandlineNo", element);
-        baseDataValidator.reset().parameter("vendorLandlineNo").value(vendorLandlineNo).notBlank().notExceedingLengthOf(20);
+        baseDataValidator.reset().parameter("vendorLandlineNo").value(vendorLandlineNo).notBlank().notExceedingLengthOf(15);
         
         final String vendorAddress = fromApiJsonHelper.extractStringNamed("vendorAddress", element);
         baseDataValidator.reset().parameter("vendorAddress").value(vendorAddress).notBlank().notExceedingLengthOf(200);

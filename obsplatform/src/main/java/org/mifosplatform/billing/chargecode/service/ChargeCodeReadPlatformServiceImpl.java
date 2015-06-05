@@ -184,10 +184,9 @@ public class ChargeCodeReadPlatformServiceImpl implements
 
 		public String schema() {
 
-			return "  cc.id as id,c.contract_duration as contractDuration,c.contract_type as contractType," +
-				   " cc.duration_type as chargeType,cc.charge_duration as chargeDuration,p.price as price" +
-				   " FROM b_contract_period c, b_plan_pricing p, b_charge_codes cc " +
-				   " where c.contract_period = p.duration and p.id=? and p.charge_code = cc.charge_code";
+			return "  cc.id AS id,c.contract_duration AS contractDuration,c.contract_type AS contractType,cc.duration_type AS chargeType," +
+					" cc.charge_duration AS chargeDuration,p.price AS price FROM b_charge_codes cc, b_plan_pricing p " +
+					" left join b_contract_period c on c.contract_period = p.duration WHERE  p.id = ? AND p.charge_code = cc.charge_code";
   
 		}
 

@@ -1,11 +1,7 @@
 package org.mifosplatform.finance.paymentsgateway.service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;

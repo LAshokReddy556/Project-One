@@ -48,7 +48,7 @@ public class ClientCardDetailsReadPlatformServiceImpl implements ClientCardDetai
         	
         	return "cd.id as id,cd.client_id as clientId,cd.type as type,cd.name as name,cd.card_number as cardNumber," +
         			"cd.card_type as cardType, cd.aba_routing_number as routingNumber,cd.bank_account_number as bankAccountNumber," +
-        			"cd.bank_name as bankName,cd.account_type as accountType,cd.card_expiry_date as cardExpiryDate,cd.cvv_number as cvvNumber" +
+        			"cd.bank_name as bankName,cd.account_type as accountType,cd.card_expiry_date as cardExpiryDate" +
         			" from m_client_card_details cd,m_client c where cd.client_id=c.id and c.id=? and cd.is_deleted='N'";
         }
 
@@ -66,10 +66,9 @@ public class ClientCardDetailsReadPlatformServiceImpl implements ClientCardDetai
             final String bankName = rs.getString("bankName");
             final String accountType = rs.getString("accountType");
             final String cardExpiryDate = rs.getString("cardExpiryDate");
-            final String cvvNumber = rs.getString("cvvNumber");
 
             return new ClientCardDetailsData(id, clientId, name, cardNumber, routingNumber,bankName,accountType,
-            		cardExpiryDate,bankAccountNumber,cardType,type,cvvNumber);
+            		cardExpiryDate,bankAccountNumber,cardType,type);
         }
 
     }

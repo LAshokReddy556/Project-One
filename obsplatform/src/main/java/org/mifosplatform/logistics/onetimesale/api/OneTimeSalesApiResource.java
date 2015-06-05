@@ -154,7 +154,8 @@ public class OneTimeSalesApiResource {
 		context.authenticatedUser().validateHasReadPermission(resourceNameForPermissions);
 		final List<ItemData> itemCodeData = this.oneTimeSaleReadPlatformService.retrieveItemData();
 		final List<DiscountMasterData> discountdata = this.discountReadPlatformService.retrieveAllDiscounts();
-	    ItemData itemData = this.itemMasterReadPlatformService.retrieveSingleItemDetails(clientId, itemId,region,true); // If you pass clientId you can set to 'true' else 'false'
+	    ItemData itemData = this.itemMasterReadPlatformService.retrieveSingleItemDetails(clientId, itemId,region,clientId != null?true:false); // If you pass clientId you can set to 'true' else 'false'
+
 	    if(itemData == null){
 	    	throw new NoItemRegionalPriceFound();
 	    }

@@ -113,7 +113,7 @@ public final class PropertyCommandFromApiJsonDeserializer {
 		final JsonElement element = fromApiJsonHelper.parse(json);
 		
 		final String oldPropertyCode = fromApiJsonHelper.extractStringNamed("oldPropertyCode", element);
-		baseDataValidator.reset().parameter("oldPropertyCode").value(oldPropertyCode).notBlank().notExceedingLengthOf(14);
+		baseDataValidator.reset().parameter("oldPropertyCode").value(oldPropertyCode).notExceedingLengthOf(14);
 		
 		final String newPropertyCode = fromApiJsonHelper.extractStringNamed("newPropertyCode", element);
 		baseDataValidator.reset().parameter("newPropertyCode").value(newPropertyCode).notBlank().notExceedingLengthOf(14);

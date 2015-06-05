@@ -83,16 +83,21 @@ public class ServiceTransferApiResource {
 	public String retrieveClientPropertyData(@PathParam("clientId") final Long clientId,@Context final UriInfo uriInfo) {
 
 		context.authenticatedUser().validateHasReadPermission(resourceNameForPermissions);
-		final ClientPropertyData clientPropertyData = this.propertyReadPlatformService.retrieveClientPropertyDetails(clientId);
+		ClientPropertyData clientPropertyData;
+		clientPropertyData = this.propertyReadPlatformService.retrieveClientPropertyDetails(clientId);
 		if(clientPropertyData !=null){
-			final List<FeeMasterData> feeMasterData = this.serviceTransferReadPlatformService.retrieveSingleFeeDetails(clientId,"Service Transfer");
+			serviceTransferGetData(clientPropertyData,clientId);
+			/*final List<FeeMasterData> feeMasterData = this.serviceTransferReadPlatformService.retrieveSingleFeeDetails(clientId,"Service Transfer");
 			final Collection<MCodeData> propertyTypes = this.mCodeReadPlatformService.getCodeValue(CodeNameConstants.CODE_PROPERTY_TYPE);
 			if(!feeMasterData.isEmpty()){
 		    	clientPropertyData.setFeeMasterData(feeMasterData.get(0));
 			    clientPropertyData.setPropertyTypes(propertyTypes);
 			 }else{
 				throw new NoFeeMasterRegionalPriceFound();
-			}
+			}*/
+		}else{
+			clientPropertyData = new ClientPropertyData();
+			serviceTransferGetData(clientPropertyData,clientId);
 		}
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, clientPropertyData,RESPONSE_DATA_PARAMETERS);
@@ -112,6 +117,17 @@ public class ServiceTransferApiResource {
 		final CommandWrapper commandRequest = new CommandWrapperBuilder().createServiceTransfer(clientId).withJson(apiRequestBodyAsJson).build();
 		final CommandProcessingResult result = this.commandSourceWritePlatformService.logCommandSource(commandRequest);
 		return this.toApiJsonSerializer.serialize(result);
+	}
+	
+	public void serviceTransferGetData(ClientPropertyData clientPropertyData, Long clientId){
+		final List<FeeMasterData> feeMasterData = this.serviceTransferReadPlatformService.retrieveSingleFeeDetails(clientId,"Service Transfer");
+		final Collection<MCodeData> propertyTypes = this.mCodeReadPlatformService.getCodeValue(CodeNameConstants.CODE_PROPERTY_TYPE);
+		if(!feeMasterData.isEmpty()){
+	    	clientPropertyData.setFeeMasterData(feeMasterData.get(0));
+		    clientPropertyData.setPropertyTypes(propertyTypes);
+		 }else{
+			throw new NoFeeMasterRegionalPriceFound();
+		}
 	}
 
 }

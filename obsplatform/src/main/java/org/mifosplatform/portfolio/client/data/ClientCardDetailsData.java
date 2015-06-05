@@ -13,11 +13,10 @@ public class ClientCardDetailsData {
 	private String cardExpiryDate;
 	private String bankAccountNumber;
 	private String cardType;
-	private String cvvNumber;
 	
 	
 	public ClientCardDetailsData(Long id, Long clientId, String name, String cardNumber, String routingNumber,String bankName,
-			String accountType, String cardExpiryDate, String bankAccountNumber, String cardType, String type, String cvvNumber) {
+			String accountType, String cardExpiryDate, String bankAccountNumber, String cardType, String type) {
 		
 		this.id=id;
 		this.clientId=clientId;
@@ -30,7 +29,6 @@ public class ClientCardDetailsData {
 		this.cardExpiryDate=cardExpiryDate;
 		this.bankAccountNumber=bankAccountNumber;
 		this.cardType=cardType;
-		this.cvvNumber=cvvNumber;
 		
 	}
 
@@ -89,11 +87,5 @@ public class ClientCardDetailsData {
 		return cardType;
 	}
 
-
-	public String getCvvNumber() {
-		return cvvNumber;
-	}
-	
-	
 
 }

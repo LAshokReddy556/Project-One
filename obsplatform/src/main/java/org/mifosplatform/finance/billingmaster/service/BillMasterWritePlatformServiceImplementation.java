@@ -253,9 +253,6 @@ public class BillMasterWritePlatformServiceImplementation implements BillMasterW
 					this.invoiceRepository.save(invoice);
 
 				}
-				
-				
-			
 			}
 			
 		billMaster.delete();

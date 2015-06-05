@@ -216,6 +216,7 @@ public Order(Long clientId, Long planId, Long contractPeriod, String paytermCode
 	}
 
 	public static Order fromJson(Long clientId, JsonCommand command) {
+		
 		 final Long planId = command.longValueOfParameterNamed("planCode");
 		 final LocalDate startDate=command.localDateValueOfParameterNamed("start_date");
 		    final Long contractPeriod = command.longValueOfParameterNamed("contractPeriod");
@@ -225,12 +226,12 @@ public Order(Long clientId, Long planId, Long contractPeriod, String paytermCode
 		    char align=billAlign?'y':'n';
 		    char autoRenew=isAutoRenew?'Y':'N';
 		    return new Order(clientId,planId,contractPeriod,paytermCode,align,startDate,autoRenew);
+
 	}
 
 	public char getbillAlign() {
 		return billingAlign;
 	}
-
 
 	public void setNextBillableDay(Date nextBillableDate) {
 		this.nextBillableDay=nextBillableDate;

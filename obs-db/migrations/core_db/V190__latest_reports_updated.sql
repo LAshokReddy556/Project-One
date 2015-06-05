@@ -81,7 +81,7 @@ CREATE or replace  VIEW  `discon_vw` AS select distinct `c`.`office_id` AS `OFFI
 
 SET @offId=(SELECT id FROM stretchy_parameter where parameter_label='Office');
 
-SET @id = (select id from stretchy_report where report_name='PaymodeCollection Chart');
+SET @id = (select id from stretchy_report where report_name='Paymode Collection Chart');
 
 insert ignore into stretchy_report_parameter(report_id,parameter_id,report_parameter_name)values (@id,@offId,'OfficeId');
 

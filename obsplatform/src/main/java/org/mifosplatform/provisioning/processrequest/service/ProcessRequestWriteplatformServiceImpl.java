@@ -4,16 +4,13 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mifosplatform.cms.eventmaster.domain.EventMasterRepository;
-import org.mifosplatform.cms.eventorder.domain.EventOrderRepository;
 import org.mifosplatform.infrastructure.configuration.domain.EnumDomainService;
 import org.mifosplatform.infrastructure.configuration.domain.EnumDomainServiceRepository;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.exception.PlatformDataIntegrityException;
-import org.mifosplatform.infrastructure.core.service.DataSourcePerTenantService;
+import org.mifosplatform.infrastructure.core.service.DateUtils;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
-import org.mifosplatform.infrastructure.security.service.TenantDetailsService;
 import org.mifosplatform.organisation.ippool.domain.IpPoolManagementDetail;
 import org.mifosplatform.organisation.ippool.domain.IpPoolManagementJpaRepository;
 import org.mifosplatform.portfolio.client.domain.Client;
@@ -26,11 +23,11 @@ import org.mifosplatform.portfolio.order.domain.OrderAddonsRepository;
 import org.mifosplatform.portfolio.order.domain.OrderRepository;
 import org.mifosplatform.portfolio.order.domain.StatusTypeEnum;
 import org.mifosplatform.portfolio.order.domain.UserActionStatusTypeEnum;
+import org.mifosplatform.portfolio.order.service.OrderAssembler;
 import org.mifosplatform.portfolio.order.service.OrderReadPlatformService;
 import org.mifosplatform.portfolio.plan.domain.Plan;
 import org.mifosplatform.portfolio.plan.domain.PlanRepository;
 import org.mifosplatform.provisioning.preparerequest.domain.PrepareRequsetRepository;
-import org.mifosplatform.provisioning.preparerequest.service.PrepareRequestReadplatformService;
 import org.mifosplatform.provisioning.processrequest.domain.ProcessRequest;
 import org.mifosplatform.provisioning.processrequest.domain.ProcessRequestDetails;
 import org.mifosplatform.provisioning.processrequest.domain.ProcessRequestRepository;
@@ -58,50 +55,40 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 	  private final PlanRepository planRepository;
 	  private final IpPoolManagementJpaRepository ipPoolManagementJpaRepository;
 	  private final ActionDetailsReadPlatformService actionDetailsReadPlatformService;
-	  private final PrepareRequestReadplatformService prepareRequestReadplatformService;
 	  private final ActiondetailsWritePlatformService actiondetailsWritePlatformService; 
 	  private final PlatformSecurityContext context;
 	  private final OrderRepository orderRepository;
 	  private final ClientRepository clientRepository;
 	  private final OrderReadPlatformService orderReadPlatformService;
 	  private final ProcessRequestRepository processRequestRepository;
-	  private final DataSourcePerTenantService dataSourcePerTenantService;
-	  private final EventOrderRepository eventOrderRepository;
-	  private final TenantDetailsService tenantDetailsService;
-	  private final EventMasterRepository eventMasterRepository;
 	  private final EnumDomainServiceRepository enumDomainServiceRepository;
 	  private final ServiceParametersRepository serviceParametersRepository;
 	  private final OrderAddonsRepository orderAddonsRepository;
-
+      private final OrderAssembler orderAssembler;
 	  
 	  
 
 	    @Autowired
-	    public ProcessRequestWriteplatformServiceImpl(final DataSourcePerTenantService dataSourcePerTenantService,final TenantDetailsService tenantDetailsService,
-	    		final PrepareRequestReadplatformService prepareRequestReadplatformService,final OrderReadPlatformService orderReadPlatformService,
+	    public ProcessRequestWriteplatformServiceImpl(final OrderReadPlatformService orderReadPlatformService,final OrderAssembler orderAssembler,
 	    		final OrderRepository orderRepository,final ProcessRequestRepository processRequestRepository,final PrepareRequsetRepository prepareRequsetRepository,
 	    		final ClientRepository clientRepository,final PlanRepository planRepository,final ActionDetailsReadPlatformService actionDetailsReadPlatformService,
-	    		final ActiondetailsWritePlatformService actiondetailsWritePlatformService,final PlatformSecurityContext context,final EventMasterRepository eventMasterRepository,
-	    		final EnumDomainServiceRepository enumDomainServiceRepository,final EventOrderRepository eventOrderRepository,final ServiceParametersRepository parametersRepository,
+	    		final ActiondetailsWritePlatformService actiondetailsWritePlatformService,final PlatformSecurityContext context,
+	    		final EnumDomainServiceRepository enumDomainServiceRepository,final ServiceParametersRepository parametersRepository,
 	    		final IpPoolManagementJpaRepository ipPoolManagementJpaRepository,final OrderAddonsRepository orderAddonsRepository) {
 
 	    	
 	    	    this.context = context;
 	    	    this.planRepository=planRepository;
-	    	    this.dataSourcePerTenantService = dataSourcePerTenantService;
 	    	    this.ipPoolManagementJpaRepository=ipPoolManagementJpaRepository;
 	    	    this.actionDetailsReadPlatformService=actionDetailsReadPlatformService;
-	    	    this.prepareRequestReadplatformService=prepareRequestReadplatformService;
 	    	    this.actiondetailsWritePlatformService=actiondetailsWritePlatformService;
 	    	    this.orderAddonsRepository=orderAddonsRepository;
 	    	    this.orderRepository=orderRepository;
 	    	    this.clientRepository=clientRepository;
+	    	    this.orderAssembler = orderAssembler;
 	    	    this.serviceParametersRepository=parametersRepository;
 	    	    this.processRequestRepository=processRequestRepository;
 	    	    this.orderReadPlatformService=orderReadPlatformService;
-	    	    this.eventOrderRepository=eventOrderRepository;
-	    	    this.tenantDetailsService = tenantDetailsService;
-	    	    this.eventMasterRepository=eventMasterRepository;
 	    	    this.enumDomainServiceRepository=enumDomainServiceRepository;
 
 	             
@@ -162,10 +149,10 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 							}
 							
 							 client=this.clientRepository.findOne(detailsData.getClientId());
-							
 							if(detailsData.getRequestType().equalsIgnoreCase(UserActionStatusTypeEnum.ACTIVATION.toString())){
-
+                                order.setStartDate(DateUtils.getLocalDateOfTenant());
 								order.setStatus(OrderStatusEnumaration.OrderStatusType(StatusTypeEnum.ACTIVE).getId());
+								order=this.orderAssembler.setDatesOnOrderActivation(order,DateUtils.getLocalDateOfTenant());
 								client.setStatus(ClientStatus.ACTIVE.getValue());
 								this.orderRepository.saveAndFlush(order);
 								List<ActionDetaislData> actionDetaislDatas=this.actionDetailsReadPlatformService.retrieveActionDetails(EventActionConstants.EVENT_ACTIVE_ORDER);
@@ -244,6 +231,19 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
                                 	}
                                 	
 								break;
+                                case ProvisioningApiConstants.REQUEST_RENEWAL_AE:
+                                	
+                                	if (detailsData.getOrderId() != null && detailsData.getOrderId() > 0) {
+        								order = this.orderRepository.findOne(detailsData.getOrderId());
+        								plan = this.planRepository.findOne(order.getPlanId());
+        							}
+        							
+        							 client=this.clientRepository.findOne(detailsData.getClientId());
+        								order.setStatus(OrderStatusEnumaration.OrderStatusType(StatusTypeEnum.ACTIVE).getId());
+        								order=this.orderAssembler.setDatesOnOrderActivation(order,DateUtils.getLocalDateOfTenant());
+        								client.setStatus(ClientStatus.ACTIVE.getValue());
+        								this.orderRepository.saveAndFlush(order);
+
 								
 								default : 
 

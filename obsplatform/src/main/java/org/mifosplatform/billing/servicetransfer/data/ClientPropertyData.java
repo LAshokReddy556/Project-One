@@ -73,6 +73,10 @@ public class ClientPropertyData {
 
 	}
 
+	public ClientPropertyData() {
+		
+	}
+
 	public String getClientId() {
 		return clientId;
 	}

@@ -7,21 +7,16 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.joda.time.LocalDate;
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.mifosplatform.billing.planprice.domain.Price;
+import org.mifosplatform.billing.planprice.domain.PriceRepository;
 import org.mifosplatform.finance.billingorder.service.BillingOrderReadPlatformService;
 import org.mifosplatform.finance.billingorder.service.GenerateBill;
 import org.mifosplatform.finance.clientbalance.domain.ClientBalance;
 import org.mifosplatform.finance.clientbalance.domain.ClientBalanceRepository;
-import org.mifosplatform.finance.paymentsgateway.domain.PaypalRecurringBilling;
 import org.mifosplatform.finance.paymentsgateway.domain.PaypalRecurringBillingRepository;
-import org.mifosplatform.billing.discountmaster.data.DiscountMasterData;
-import org.mifosplatform.billing.planprice.domain.Price;
-import org.mifosplatform.billing.planprice.domain.PriceRepository;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
 import org.mifosplatform.infrastructure.core.serialization.FromJsonHelper;
-import org.mifosplatform.infrastructure.core.service.DateUtils;
-import org.mifosplatform.portfolio.contract.data.SubscriptionData;
 import org.mifosplatform.portfolio.contract.domain.Contract;
 import org.mifosplatform.portfolio.contract.domain.ContractRepository;
 import org.mifosplatform.portfolio.contract.service.ContractPeriodReadPlatformService;
@@ -126,7 +121,7 @@ return isAmountSufficient;
 */}
 
 
-	public void ProcessAutoExipiryDetails(OrderData orderData, FileWriter fw, LocalDate exipirydate, JobParameterData data, Long clientId) {
+public void ProcessAutoExipiryDetails(OrderData orderData, FileWriter fw, LocalDate exipirydate, JobParameterData data, Long clientId) {
 		  
 		 try{
 
@@ -154,6 +149,7 @@ return isAmountSufficient;
 		                        		  jsonobject.put("priceId",prices.get(0).getId());
 		                        		  }
 		                        	  }
+
 		                             jsonobject.put("renewalPeriod",order.getContarctPeriod()); 
 		                             jsonobject.put("description","Order Renewal By Scheduler");
 		                             
@@ -194,6 +190,7 @@ return isAmountSufficient;
 		                    	 
 		                     }
 		                     }else{// if (orderData.getEndDate().equals(exipirydate) || exipirydate.toDate().after((orderData.getEndDate().toDate()))){
+
 
 
 		                            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy");

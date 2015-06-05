@@ -53,9 +53,6 @@ public class ClientCardDetails extends AbstractAuditableCustom<AppUser, Long> {
 	 @Column(name = "card_type", nullable = false)
 	 private String cardType;
 	 
-	 @Column(name = "cvv_number", nullable = false)
-	 private String cvvNumber;
-	 
 	 @Column(name = "is_deleted", nullable = false)
 	 private char isDeleted;
 
@@ -65,14 +62,13 @@ public class ClientCardDetails extends AbstractAuditableCustom<AppUser, Long> {
 	
 	
 	public ClientCardDetails(String cardName, String cardNumber,String cardExpiryDate, 
-			String cardType, String cvvNumber, String type, Long data) {
+			String cardType, String type, Long data) {
 		
 		this.cardName=cardName;
 		this.cardNumber=cardNumber;
 		this.expiryDate=cardExpiryDate;
 		this.cardType=cardType;
 		this.type=type;
-		this.cvvNumber=cvvNumber;
 		this.isDeleted='N';
 		
 	}
@@ -105,8 +101,7 @@ public class ClientCardDetails extends AbstractAuditableCustom<AppUser, Long> {
 	    	String cardNumber = command.stringValueOfParameterNamed("cardNumber");
 	    	String cardExpiryDate = command.stringValueOfParameterNamed("cardExpiryDate");
 	    	String cardType = command.stringValueOfParameterNamed("cardType");
-	    	String cvvNumber = command.stringValueOfParameterNamed("cvvNumber");
-	    	clientCardDetails = new ClientCardDetails(cardName,cardNumber,cardExpiryDate,cardType,cvvNumber,type,data);
+	    	clientCardDetails = new ClientCardDetails(cardName,cardNumber,cardExpiryDate,cardType,type,data);
 	    	
 		}else if(type.equalsIgnoreCase(ACH_CARD)){
 			
@@ -152,13 +147,6 @@ public class ClientCardDetails extends AbstractAuditableCustom<AppUser, Long> {
 				final String newValue = command.stringValueOfParameterNamed("cardType");
 				actualChanges.put(cardType, newValue);
 				this.cardType = StringUtils.defaultIfEmpty(newValue, null);
-			}
-			
-			final String cvvNumber = "cvvNumber";
-			if (command.isChangeInStringParameterNamed(cvvNumber,this.cvvNumber)) {
-				final String newValue = command.stringValueOfParameterNamed("cvvNumber");
-				actualChanges.put(cvvNumber, newValue);
-				this.cvvNumber = StringUtils.defaultIfEmpty(newValue, null);
 			}
 			
 			final String cardExpiryDate = "cardExpiryDate";

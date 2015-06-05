@@ -43,7 +43,7 @@ public class ClientCardDetailsApiResource {
 
 	 private static final Set<String> CLIENT_CARDDETAILS_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id", "clientId",
 	            "type", "name", "cardNumber", "cardType", "routingNumber", "bankAccountNumber", "bankName", "accountType",
-	            "cvvNumber", "cardExpiryDate"));
+	            "cardExpiryDate"));
 
 	    private final String resourceNameForPermissions = "CLIENTCARDDETAILS";
 
