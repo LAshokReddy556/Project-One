@@ -40,6 +40,7 @@ import org.mifosplatform.finance.paymentsgateway.domain.PaypalRecurringBilling;
 import org.mifosplatform.finance.paymentsgateway.domain.PaypalRecurringBillingRepository;
 import org.mifosplatform.finance.paymentsgateway.exception.PaymentGatewayConfigurationException;
 import org.mifosplatform.finance.paymentsgateway.exception.PaypalBillingPeriodTypeMisMatchException;
+import org.mifosplatform.finance.paymentsgateway.exception.PaypalCustomParameterDataNotFoundException;
 import org.mifosplatform.finance.paymentsgateway.exception.PaypalStatusChangeActionTypeMisMatchException;
 import org.mifosplatform.finance.paymentsgateway.serialization.PaymentGatewayCommandFromApiJsonDeserializer;
 import org.mifosplatform.infrastructure.configuration.domain.Configuration;
@@ -427,6 +428,10 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 			
 			PaypalRecurringBilling billing = this.paypalRecurringBillingRepository.findOneBySubscriberId(ProfileId);
 			
+			if(null == customData){
+				throw new PaypalCustomParameterDataNotFoundException();	
+			}
+			
 			if (null == billing) {
 				System.out.println("Creating recurring account");
 
@@ -475,6 +480,10 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 		jsonObj.addProperty("paymentStatus", paymentStatus);
 		
 		String customData = customDataReturn(request);
+		
+		if(null == customData){
+			throw new PaypalCustomParameterDataNotFoundException();	
+		}
 		
 		JSONObject custom = new JSONObject(customData);
 		Long clientId = custom.getLong(RecurringPaymentTransactionTypeConstants.CLIENTID);
