@@ -67,11 +67,11 @@ public class RecurringPaymentTransactionTypeConstants {
 	public static final String NAME_ON_CARD			= "nameOnCard";
 			
 	//paypal IPN Verification Use Parameters
-	public static final String NOTIFY_VALIDATE			= "cmd=_notify-validate";
-	public static final String CONTENT_TYPE_VALUE			= "application/x-www-form-urlencoded";
-	public static final String CONTENT_TYPE				= "Content-Type";
-	public static final String HOST						= "Host";
-	public static final String POST						= "POST";
+	public static final String NOTIFY_VALIDATE		= "cmd=_notify-validate";
+	public static final String CONTENT_TYPE_VALUE		= "application/x-www-form-urlencoded";
+	public static final String CONTENT_TYPE			= "Content-Type";
+	public static final String HOST					= "Host";
+	public static final String POST					= "POST";
 	
 	
 	
