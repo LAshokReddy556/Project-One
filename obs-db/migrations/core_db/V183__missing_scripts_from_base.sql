@@ -1,4 +1,3 @@
-SET SQL_SAFE_UPDATES = 0;
 -- Create Tables
 SET SQL_SAFE_UPDATES = 0;
 CREATE TABLE IF NOT EXISTS `b_billing_rules` (
@@ -492,4 +491,4 @@ insert ignore into r_enum_value VALUES ('device_swap',1,'Replacement','Replaceme
 
 -- insert ignore into c_paymentgateway_conf values(null,'is-paypal',1,'{"clientId":AZqG2RCYDJtB9b1J3Qz-uZIzrg9uFTh_RjV8NaupF3RXoXJVzKhI3kqDvSvm,"secretCode" : "EJURWhCrRD1e580Wpk2gRRs56ZNyGUduwaCtDSAvKv_qpaoN9GePsmIjsndP"}');
 -- insert ignore into c_paymentgateway_conf values(null,'is-paypal-for-ios',1,'{"clientId":AZqG2RCYDJtB9b1J3Qz-uZIzrg9uFTh_RjV8NaupF3RXoXJVzKhI3kqDvSvm,"secretCode" : "EJURWhCrRD1e580Wpk2gRRs56ZNyGUduwaCtDSAvKv_qpaoN9GePsmIjsndP"}');
-SET SQL_SAFE_UPDATES = 1;
+

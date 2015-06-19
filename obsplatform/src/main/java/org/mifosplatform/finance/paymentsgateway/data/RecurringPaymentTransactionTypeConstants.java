@@ -22,6 +22,7 @@ public class RecurringPaymentTransactionTypeConstants {
 	
 	public static final String RECURRING_PAYMENT_FAILURE			= "FAILURE";
 	public static final String RECURRING_PAYMENT_SUCCESS			= "SUCCESS";
+	public static final String RECURRING_PAYMENT_UNKNOWN			= "UNKNOWN";
 	
 	//constants
 	public static final String RECURRING_TXNTYPE		= "txn_type";
@@ -42,7 +43,7 @@ public class RecurringPaymentTransactionTypeConstants {
 	public static final String RENEWALPERIOD			= "renewalPeriod";
 	public static final String PRICEID 				= "priceId";
 	public static final String RP_INVOICE_ID 			= "rp_invoice_id";
-	
+	public static final String MC_CURRENCY 			= "mc_currency";
 	
 	//Paypal Constant Variable Names
 	public static final String PAYMENTSTATUS 			= "payment_status";

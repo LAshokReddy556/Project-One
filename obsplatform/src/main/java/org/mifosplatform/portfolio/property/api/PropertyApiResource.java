@@ -265,7 +265,7 @@ public class PropertyApiResource {
 	
 	
 	/**
-	 * using this method ,we search property codes for fill client address
+	 * using this method ,we track property code history
 	 */
 	@GET
 	@Path("/history")

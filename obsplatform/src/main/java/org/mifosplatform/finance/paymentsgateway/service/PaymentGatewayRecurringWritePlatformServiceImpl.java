@@ -43,13 +43,11 @@ import org.mifosplatform.finance.paymentsgateway.domain.RecurringBillingHistoryR
 import org.mifosplatform.finance.paymentsgateway.exception.CreditCardConfigurationNotEnabledException;
 import org.mifosplatform.finance.paymentsgateway.exception.PaymentGatewayConfigurationException;
 import org.mifosplatform.finance.paymentsgateway.exception.PaypalBillingPeriodTypeMisMatchException;
-import org.mifosplatform.finance.paymentsgateway.exception.PaypalCustomParameterDataNotFoundException;
 import org.mifosplatform.finance.paymentsgateway.exception.PaypalStatusChangeActionTypeMisMatchException;
 import org.mifosplatform.finance.paymentsgateway.serialization.PaymentGatewayCommandFromApiJsonDeserializer;
 import org.mifosplatform.infrastructure.configuration.domain.Configuration;
 import org.mifosplatform.infrastructure.configuration.domain.ConfigurationConstants;
 import org.mifosplatform.infrastructure.configuration.domain.ConfigurationRepository;
-import org.mifosplatform.infrastructure.configuration.exception.ConfigurationPropertyNotFoundException;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResultBuilder;
@@ -184,6 +182,7 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 			StringBuilder requestData = new StringBuilder(RecurringPaymentTransactionTypeConstants.NOTIFY_VALIDATE);
 			
 			while (enumeration.hasMoreElements()) {
+				
 				paramName = (String) enumeration.nextElement();
 				paramValue = request.getParameter(paramName);
 				
@@ -230,195 +229,188 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 	@Override
 	public void recurringEventUpdate(HttpServletRequest request, RecurringBillingHistory recurringBillingHistory) throws JSONException {
 		
-		try {
+		this.context.authenticatedUser();
+		
+		String ProfileId = request.getParameter(RecurringPaymentTransactionTypeConstants.SUBSCRID);
+		PaypalRecurringBilling paypalRecurringBilling = this.paypalRecurringBillingRepository.findOneBySubscriberId(ProfileId);
+		
+		if(null == paypalRecurringBilling) return;
+		
+		String jsonObj = customDataReturn(request);
+		
+		JSONObject obj = new JSONObject(jsonObj);
+		
+		Long clientId = obj.getLong(RecurringPaymentTransactionTypeConstants.CLIENTID);
+		
+		List<EventActionData> eventActionDatas = this.eventActionReadPlatformService.retrievePendingRecurringRequest(clientId);
+		
+		for(EventActionData eventActionData:eventActionDatas){
 			
-			this.context.authenticatedUser();
+			System.out.println("EventAction Id: "+eventActionData.getId()+", clientId: "+clientId + ", actionName: "+ eventActionData.getActionName());
+		
+			EventAction eventAction = this.eventActionRepository.findOne(eventActionData.getId());
 			
-			PaypalRecurringBilling paypalRecurringBilling = recurringSubscriberSignUp(request, recurringBillingHistory);
+			recurringBillingHistory.setClientId(clientId);
 			
-			if(null == paypalRecurringBilling) return;
-			
-			String jsonObj = customDataReturn(request);
-			
-			JSONObject obj = new JSONObject(jsonObj);
-			
-			Long clientId = obj.getLong(RecurringPaymentTransactionTypeConstants.CLIENTID);
-			
-			List<EventActionData> eventActionDatas = this.eventActionReadPlatformService.retrievePendingRecurringRequest(clientId);
-			
-			for(EventActionData eventActionData:eventActionDatas){
+			if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_NEW)) {
 				
-				System.out.println("EventAction Id: "+eventActionData.getId()+", clientId: "+clientId + ", actionName: "+ eventActionData.getActionName());
-			
-				EventAction eventAction = this.eventActionRepository.findOne(eventActionData.getId());
+				Long planId   = obj.getLong(RecurringPaymentTransactionTypeConstants.PLANID);
+				String paytermCode = obj.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
+				Long contractPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
 				
-				recurringBillingHistory.setClientId(clientId);
+				JSONObject createOrder = new JSONObject(eventAction.getCommandAsJson());
 				
-				if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_NEW)) {
+				Long ePlanCode   = createOrder.getLong(RecurringPaymentTransactionTypeConstants.PLANCODE);
+				String ePaytermCode = createOrder.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
+				Long eContractPeriod = createOrder.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
+				
+				if(planId.equals(ePlanCode) && paytermCode.equalsIgnoreCase(ePaytermCode) && contractPeriod.equals(eContractPeriod)) {
 					
-					Long planId   = obj.getLong(RecurringPaymentTransactionTypeConstants.PLANID);
-					String paytermCode = obj.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
-					Long contractPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
-					
-					JSONObject createOrder = new JSONObject(eventAction.getCommandAsJson());
-					
-					Long ePlanCode   = createOrder.getLong(RecurringPaymentTransactionTypeConstants.PLANCODE);
-					String ePaytermCode = createOrder.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
-					Long eContractPeriod = createOrder.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
-					
-					if(planId.equals(ePlanCode) && paytermCode.equalsIgnoreCase(ePaytermCode) && contractPeriod.equals(eContractPeriod)) {
-						
-						// creating order and assign Recurring Details.
-						try {
-							CommandWrapper commandRequest = new CommandWrapperBuilder().createOrder(clientId).withJson(createOrder.toString()).build();
-							CommandProcessingResult resultOrder = this.writePlatformService.logCommandSource(commandRequest);
+					// creating order and assign Recurring Details.
+					try {
+						CommandWrapper commandRequest = new CommandWrapperBuilder().createOrder(clientId).withJson(createOrder.toString()).build();
+						CommandProcessingResult resultOrder = this.writePlatformService.logCommandSource(commandRequest);
 
-							if (null == resultOrder || resultOrder.resourceId() <= 0) {
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-								recurringBillingHistory.setObsDescription("OrderBooking Failed...");
-								eventAction.updateStatus('F');
-								eventAction.setDescription("orderBooking Failed with id=" + resultOrder.resourceId());
-							}
-							
-							if(null != paypalRecurringBilling){
-								createOrder.remove("start_date");
-								eventAction.updateStatus('Y');
-								eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
-								createOrder.put("start_date", DateUtils.getLocalDateOfTenant().toDate());
-								eventAction.setCommandAsJson(createOrder.toString());
-								eventAction.setDescription("Success");										
-								paypalRecurringBilling.setOrderId(resultOrder.resourceId());		
-								this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
-								recurringBillingHistory.setObsDescription("OrderBooking Success...");
-							}
-							
-						} catch (Exception e) {
+						if (null == resultOrder || resultOrder.resourceId() <= 0) {
 							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-							recurringBillingHistory.setObsDescription("OrderBooking Failed, Reason:"+stackTraceToString(e));
+							recurringBillingHistory.setObsDescription("OrderBooking Failed...");
 							eventAction.updateStatus('F');
-							eventAction.setDescription("Reason:" + stackTraceToString(e));
+							eventAction.setDescription("orderBooking Failed with id=" + resultOrder.resourceId());
 						}
-					}
-					
-				} else if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_CHNAGE_PLAN)) {
-					
-					//Do the Change Order Functionality Here
-					Long planId   = obj.getLong(RecurringPaymentTransactionTypeConstants.PLANID);
-					String paytermCode = obj.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
-					Long contractPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
-					Long orderId   = obj.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
-					
-					JSONObject changeOrder = new JSONObject(eventAction.getCommandAsJson());
-					
-					Long ePlanCode   = changeOrder.getLong(RecurringPaymentTransactionTypeConstants.PLANCODE);
-					String ePaytermCode = changeOrder.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
-					Long eContractPeriod = changeOrder.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
-					
-					if(planId.equals(ePlanCode) && paytermCode.equalsIgnoreCase(ePaytermCode) && contractPeriod.equals(eContractPeriod)){
 						
-						try {
-							CommandWrapper commandRequest = new CommandWrapperBuilder().changePlan(orderId).withJson(changeOrder.toString()).build();
-							CommandProcessingResult result = this.writePlatformService.logCommandSource(commandRequest);
-							
-							if (null == result || result.resourceId() <= 0) {
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-								recurringBillingHistory.setObsDescription("Change Plan Action Failed...");
-								eventAction.updateStatus('F');
-								eventAction.setDescription("result.resourceId=" + result.resourceId());
-							}
-							
-							if(null != paypalRecurringBilling){
-								
-								if(changeOrder.has("start_date")){
-									changeOrder.remove("start_date");
-									changeOrder.put("start_date", DateUtils.getLocalDateOfTenant().toDate());
-								}
-								
-								eventAction.updateStatus('Y');
-								eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
-								eventAction.setCommandAsJson(changeOrder.toString());
-								eventAction.setDescription("Success");
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
-								recurringBillingHistory.setObsDescription("Change Plan Completed");
-								
-								paypalRecurringBilling.setOrderId(result.resourceId());
-								this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
-							}
-							
-						} catch (Exception e) {
-							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-							recurringBillingHistory.setObsDescription("change Plan Action Failed, Reason:" + stackTraceToString(e));
-							eventAction.updateStatus('F');
-							eventAction.setDescription("StackTrace:" + stackTraceToString(e));
-						}	
-					}
-					
-				} else if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_RENEWAL)) {
-					
-					Long renewalPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.RENEWALPERIOD);
-					Long priceId = obj.getLong(RecurringPaymentTransactionTypeConstants.PRICEID);
-					Long orderId   = obj.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
-					
-					JSONObject renewalOrder = new JSONObject(eventAction.getCommandAsJson());
-					
-					Long eRenewalPeriod   = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.RENEWALPERIOD);
-					Long ePriceId = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.PRICEID);
-					Long eOrderId = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
-					
-					if(renewalOrder.has(RecurringPaymentTransactionTypeConstants.CLIENTID)){
-						renewalOrder.remove(RecurringPaymentTransactionTypeConstants.CLIENTID);
-					}
-					
-					if(renewalOrder.has(RecurringPaymentTransactionTypeConstants.ORDERID)){
-						renewalOrder.remove(RecurringPaymentTransactionTypeConstants.ORDERID);
-					}
-					
-					if(renewalPeriod.equals(eRenewalPeriod) && priceId.equals(ePriceId) && orderId.equals(eOrderId)){
-						
-						try {
-							final CommandWrapper commandRequest = new CommandWrapperBuilder().renewalOrder(orderId).withJson(renewalOrder.toString()).build();
-							final CommandProcessingResult result = this.writePlatformService.logCommandSource(commandRequest);
-							
-							if (null == result || result.resourceId() <= 0) {
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-								recurringBillingHistory.setObsDescription("Renewal Order Action Failed...");
-								eventAction.updateStatus('F');
-								eventAction.setDescription("result.resourceId=" + result.resourceId());
-							}
-							
-							if(null != paypalRecurringBilling){
-								eventAction.updateStatus('Y');
-								eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
-								eventAction.setDescription("Success");
-								recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
-								recurringBillingHistory.setObsDescription("Renewal Order Completed");
-								paypalRecurringBilling.setOrderId(orderId);
-								this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
-							}
-							
-						} catch (Exception e) {
-							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-							recurringBillingHistory.setObsDescription("Renewal Order Action Failed, Reason:" + stackTraceToString(e));
-							eventAction.updateStatus('F');
-							eventAction.setDescription("StackTrace:" + stackTraceToString(e));
+						if(null != paypalRecurringBilling){
+							createOrder.remove("start_date");
+							eventAction.updateStatus('Y');
+							eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
+							createOrder.put("start_date", DateUtils.getLocalDateOfTenant().toDate());
+							eventAction.setCommandAsJson(createOrder.toString());
+							eventAction.setDescription("Success");										
+							paypalRecurringBilling.setOrderId(resultOrder.resourceId());		
+							this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
+							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
+							recurringBillingHistory.setObsDescription("OrderBooking Success...");
 						}
+						
+					} catch (Exception e) {
+						recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+						recurringBillingHistory.setObsDescription("OrderBooking Failed, Reason:"+stackTraceToString(e));
+						eventAction.updateStatus('F');
+						eventAction.setDescription("Reason:" + stackTraceToString(e));
 					}
-					
-				} else{
-					recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-					recurringBillingHistory.setObsDescription("Didn't Develop this Functionality");
-					System.out.println("Does Not Implement the Code....");
 				}
 				
-				this.eventActionRepository.save(eventAction);
-				this.recurringBillingHistoryRepository.save(recurringBillingHistory);
+			} else if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_CHNAGE_PLAN)) {
+				
+				//Do the Change Order Functionality Here
+				Long planId   = obj.getLong(RecurringPaymentTransactionTypeConstants.PLANID);
+				String paytermCode = obj.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
+				Long contractPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
+				Long orderId   = obj.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
+				
+				JSONObject changeOrder = new JSONObject(eventAction.getCommandAsJson());
+				
+				Long ePlanCode   = changeOrder.getLong(RecurringPaymentTransactionTypeConstants.PLANCODE);
+				String ePaytermCode = changeOrder.getString(RecurringPaymentTransactionTypeConstants.PAYTERMCODE);
+				Long eContractPeriod = changeOrder.getLong(RecurringPaymentTransactionTypeConstants.CONTRACTPERIOD);
+				
+				if(planId.equals(ePlanCode) && paytermCode.equalsIgnoreCase(ePaytermCode) && contractPeriod.equals(eContractPeriod)){
+					
+					try {
+						CommandWrapper commandRequest = new CommandWrapperBuilder().changePlan(orderId).withJson(changeOrder.toString()).build();
+						CommandProcessingResult result = this.writePlatformService.logCommandSource(commandRequest);
+						
+						if (null == result || result.resourceId() <= 0) {
+							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+							recurringBillingHistory.setObsDescription("Change Plan Action Failed...");
+							eventAction.updateStatus('F');
+							eventAction.setDescription("result.resourceId=" + result.resourceId());
+						}
+						
+						if(null != paypalRecurringBilling){
+							
+							if(changeOrder.has("start_date")){
+								changeOrder.remove("start_date");
+								changeOrder.put("start_date", DateUtils.getLocalDateOfTenant().toDate());
+							}
+							
+							eventAction.updateStatus('Y');
+							eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
+							eventAction.setCommandAsJson(changeOrder.toString());
+							eventAction.setDescription("Success");
+							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
+							recurringBillingHistory.setObsDescription("Change Plan Completed");
+							
+							paypalRecurringBilling.setOrderId(result.resourceId());
+							this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
+						}
+						
+					} catch (Exception e) {
+						recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+						recurringBillingHistory.setObsDescription("change Plan Action Failed, Reason:" + stackTraceToString(e));
+						eventAction.updateStatus('F');
+						eventAction.setDescription("StackTrace:" + stackTraceToString(e));
+					}	
+				}
+				
+			} else if (eventAction.getActionName().equalsIgnoreCase(EventActionConstants.ACTION_RENEWAL)) {
+				
+				Long renewalPeriod = obj.getLong(RecurringPaymentTransactionTypeConstants.RENEWALPERIOD);
+				Long priceId = obj.getLong(RecurringPaymentTransactionTypeConstants.PRICEID);
+				Long orderId   = obj.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
+				
+				JSONObject renewalOrder = new JSONObject(eventAction.getCommandAsJson());
+				
+				Long eRenewalPeriod   = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.RENEWALPERIOD);
+				Long ePriceId = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.PRICEID);
+				Long eOrderId = renewalOrder.getLong(RecurringPaymentTransactionTypeConstants.ORDERID);
+				
+				if(renewalOrder.has(RecurringPaymentTransactionTypeConstants.CLIENTID)){
+					renewalOrder.remove(RecurringPaymentTransactionTypeConstants.CLIENTID);
+				}
+				
+				if(renewalOrder.has(RecurringPaymentTransactionTypeConstants.ORDERID)){
+					renewalOrder.remove(RecurringPaymentTransactionTypeConstants.ORDERID);
+				}
+				
+				if(renewalPeriod.equals(eRenewalPeriod) && priceId.equals(ePriceId) && orderId.equals(eOrderId)){
+					
+					try {
+						final CommandWrapper commandRequest = new CommandWrapperBuilder().renewalOrder(orderId).withJson(renewalOrder.toString()).build();
+						final CommandProcessingResult result = this.writePlatformService.logCommandSource(commandRequest);
+						
+						if (null == result || result.resourceId() <= 0) {
+							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+							recurringBillingHistory.setObsDescription("Renewal Order Action Failed...");
+							eventAction.updateStatus('F');
+							eventAction.setDescription("result.resourceId=" + result.resourceId());
+						}
+						
+						if(null != paypalRecurringBilling){
+							eventAction.updateStatus('Y');
+							eventAction.setTransDate(DateUtils.getLocalDateOfTenant().toDate());
+							eventAction.setDescription("Success");
+							recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
+							recurringBillingHistory.setObsDescription("Renewal Order Completed");
+							paypalRecurringBilling.setOrderId(orderId);
+							this.paypalRecurringBillingRepository.save(paypalRecurringBilling);
+						}
+						
+					} catch (Exception e) {
+						recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+						recurringBillingHistory.setObsDescription("Renewal Order Action Failed, Reason:" + stackTraceToString(e));
+						eventAction.updateStatus('F');
+						eventAction.setDescription("StackTrace:" + stackTraceToString(e));
+					}
+				}
+				
+			} else{
+				recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
+				recurringBillingHistory.setObsDescription("Didn't Develop this Functionality");
+				System.out.println("Does Not Implement the Code....");
 			}
-
-		
 			
-		} catch (Exception e) {
-			// TODO: handle exception
+			this.eventActionRepository.save(eventAction);
+			this.recurringBillingHistoryRepository.save(recurringBillingHistory);
 		}
 	}
 
@@ -463,12 +455,21 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 					return null;
 				}
 				Long clientId = object.getLong(RecurringPaymentTransactionTypeConstants.CLIENTID);
+				
 				billing = new PaypalRecurringBilling(clientId, ProfileId);
 				this.paypalRecurringBillingRepository.save(billing);
+				
+				String currencyCode = null;
+				
+				if(request.getParameterMap().containsKey(RecurringPaymentTransactionTypeConstants.MC_CURRENCY)){
+					currencyCode = request.getParameter(RecurringPaymentTransactionTypeConstants.MC_CURRENCY);
+				}
+				
+				updateRecurring(ProfileId, 0, null, currencyCode);
+				
 				recurringBillingHistory.setClientId(clientId);
 				recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
 				recurringBillingHistory.setObsDescription("Recurring Billing Profile Successfully Created, ProfileId="+ ProfileId);
-				updateRecurring(ProfileId, 0, null);
 				this.recurringBillingHistoryRepository.save(recurringBillingHistory);
 			}
 			return billing;
@@ -522,7 +523,7 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 		jsonObj.addProperty("paymentStatus", paymentStatus);
 		
 		String customData = customDataReturn(request);
-		
+
 		JSONObject custom = new JSONObject(customData);
 		Long clientId = custom.getLong(RecurringPaymentTransactionTypeConstants.CLIENTID);
 		
@@ -565,32 +566,22 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 	 * @param billingCycles --> Adding Additional Billing Cycles to Existing Profile. 
 	 * @param totalAmount --> Updating the Recurring Profile Price to this Parameter value.
 	 * NOTE: This Updation Only Work, When the Increasing Price is lessthan 20% to Profile Price. 
+	 * @param currency 
 	 * @return
 	 */
-	private Map<String,Object> updateRecurring(String subscriberId, int billingCycles, String totalAmount){
+	private Map<String,Object> updateRecurring(String subscriberId, int billingCycles, String totalAmount, String currencyCode){
 		
-
 		Map<String,Object> mapDetails = new HashMap<String,Object>();
 		
 		try {
-			
-			PaymentGatewayConfiguration pgConfigDetails = this.paymentGatewayConfigurationRepository.findOneByName(ConfigurationConstants.PAYPAL_PAYMENTGATEWAY);
-			
-			if (null == pgConfigDetails || null == pgConfigDetails.getValue() || !pgConfigDetails.isEnabled()) {
-				throw new PaymentGatewayConfigurationException(ConfigurationConstants.PAYPAL_PAYMENTGATEWAY);
-			}
-			
-			JSONObject object = new JSONObject(pgConfigDetails.getValue());
-			
-			String currencyCode = object.getString("currency_code");
+			Configuration config = this.configurationRepository.findOneByName(ConfigurationConstants.PAYPAL_MAX_FAILED_COUNT);
 			
 			int maxFailedPayments = 5;
 			
-			if(object.has("maxFailedPayments")){
-				maxFailedPayments = object.getInt("maxFailedPayments");
+			if(null !=config && config.isEnabled() && !config.getValue().isEmpty()){
+				maxFailedPayments = Integer.parseInt(config.getValue());
 			}
 			
-
 			UpdateRecurringPaymentsProfileRequestDetailsType updateRecurringPaymentsProfileRequestDetails = new UpdateRecurringPaymentsProfileRequestDetailsType();
 			
 			updateRecurringPaymentsProfileRequestDetails.setProfileID(subscriberId);
@@ -700,28 +691,23 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 
 			Long orderId = command.longValueOfParameterNamed("orderId");
 			int billingCycles = 0;
-			String totalAmount = null;
+			String totalAmount = null, currencyCode="USD";
 			
 			PaypalRecurringBilling paypalRecurringBilling = this.paypalRecurringBillingRepository.findOneByOrderId(orderId);
 			
-			if(null == paypalRecurringBilling){
-				throw new OrderNotFoundException(orderId);
-			}
+			if(null == paypalRecurringBilling) throw new OrderNotFoundException(orderId);
 			
-			if(command.hasParameter("billingCycles")){
-				billingCycles = command.integerValueOfParameterNamed("billingCycles");
-			}
+			if(command.hasParameter("billingCycles")) billingCycles = command.integerValueOfParameterNamed("billingCycles");
+
+			if(command.hasParameter("totalAmount")) totalAmount = command.stringValueOfParameterNamed("totalAmount");
 			
-			if(command.hasParameter("totalAmount")){	
-				totalAmount = command.stringValueOfParameterNamed("totalAmount");
-			}
+			if(command.hasParameter("currencyCode")) currencyCode = command.stringValueOfParameterNamed("currencyCode");
 			
-			mapDetails = updateRecurring(paypalRecurringBilling.getSubscriberId(), billingCycles, totalAmount);
+			mapDetails = updateRecurring(paypalRecurringBilling.getSubscriberId(), billingCycles, totalAmount, currencyCode);
 			
 		} catch (Exception e) {
 			
 			mapDetails = new HashMap<>();
-			
 			mapDetails.put("result", RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
 			mapDetails.put("error", stackTraceToString(e));
 		}
@@ -920,16 +906,16 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 				if (result != null && result.resourceId() > 0) {
 					recurringBillingHistory.setClientId(order.getClientId());
 					recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
-					recurringBillingHistory.setObsDescription("Order Termination Completed...");
+					recurringBillingHistory.setObsDescription("Order DisConnection Completed...");
 				} else {
 					recurringBillingHistory.setClientId(order.getClientId());
 					recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILURE);
-					recurringBillingHistory.setObsDescription("Order Termination Failed...");
+					recurringBillingHistory.setObsDescription("Order DisConnection Failed...");
 				}
 			} else {
 				Order order = this.orderRepository.findOne(orderId);
 				recurringBillingHistory.setClientId(order.getClientId());
-				recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUCCESS);
+				recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_UNKNOWN);
 				recurringBillingHistory.setObsDescription("Status of Order=" + status);
 			}
 			
@@ -1051,6 +1037,7 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 			EventAction eventAction = this.eventActionRepository.findOne(new Long(eventID));
 			
 			if(null != eventAction) return eventAction.getCommandAsJson();
+			
 			else return null;	
 			
 		} else {	
@@ -1058,6 +1045,20 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public String getRequestParameters(HttpServletRequest request) {
+		
+		Enumeration enumeration = request.getParameterNames();
+		JsonObject object = new JsonObject();
+		while (enumeration.hasMoreElements()) {
+			String paramName = (String) enumeration.nextElement();
+			String paramValue = request.getParameter(paramName);	
+			if (!"password".equalsIgnoreCase(paramName)) object.addProperty(paramName, paramValue);
+		}
+		return object.toString();	
+	}
+	
 	/**
 	 * i) De-Crypt Creditcard data and if Required Store that data in Credit Card Storing table
 	 * ii) Store the Custom data in Event Action table and take the EventId and Pass that Value to Paypal Server.
@@ -1289,19 +1290,6 @@ public class PaymentGatewayRecurringWritePlatformServiceImpl implements PaymentG
 		} else{
 ;          throw new CreditCardConfigurationNotEnabledException();
 		}
-	}
-
-	@Override
-	public String getRequestParameters(HttpServletRequest request) {
-		
-		Enumeration enumeration = request.getParameterNames();
-		JsonObject object = new JsonObject();
-		while (enumeration.hasMoreElements()) {
-			String paramName = (String) enumeration.nextElement();
-			String paramValue = request.getParameter(paramName);	
-			if (!"password".equalsIgnoreCase(paramName)) object.addProperty(paramName, paramValue);
-		}
-		return object.toString();	
 	}
 
 }

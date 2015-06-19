@@ -150,8 +150,6 @@ public class TenantAwareBasicAuthenticationFilter extends BasicAuthenticationFil
                 }else{
                	   throw new AuthenticationCredentialsNotFoundException("Credentials are not valid");
                 }
-                
-           	
 
            }else if(path.contains("/api/v1/entitlements/getauth") && request.getMethod().equalsIgnoreCase("GET")){
  

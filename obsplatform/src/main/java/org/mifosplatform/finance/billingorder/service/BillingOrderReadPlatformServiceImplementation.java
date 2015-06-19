@@ -371,6 +371,34 @@ public class BillingOrderReadPlatformServiceImplementation implements BillingOrd
 		}
 	}
 
+	@Override
+	public List<Long> listOfInvoices(Long clientId, Long orderId) {
+		
+		final ListInvoiceMapper invoicemapper = new ListInvoiceMapper();
+		final String sql = "select" + invoicemapper.schema();
+		return this.jdbcTemplate.query(sql, invoicemapper,new Object[] { clientId, orderId});
+		
+	}
+	
+	private static final class ListInvoiceMapper implements RowMapper<Long> {
+
+		@Override
+		public Long  mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+			
+			final Long invoiceId = resultSet.getLong("invoiceId");
+			
+			return invoiceId;
+		}
+
+		public String schema() {
+			
+			return " i.id as invoiceId FROM b_charge c, b_invoice i "+
+					" WHERE c.client_id = ? and c.invoice_id = i.id and c.order_id = ? and c.charge_end_date > now() " +
+					" and c.charge_type = 'RC' order by i.id desc; ";
+		}
+		
+	}
+
 }
 
 

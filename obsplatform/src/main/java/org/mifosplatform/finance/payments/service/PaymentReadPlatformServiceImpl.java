@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.joda.time.LocalDate;
+import org.mifosplatform.billing.invoice.data.InvoiceData;
 import org.mifosplatform.finance.payments.data.McodeData;
 import org.mifosplatform.finance.payments.data.PaymentData;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
@@ -166,6 +168,42 @@ private static final class InvoiceMapper implements RowMapper<PaymentData> {
 	}
 }
 
+@Override
+public List<PaymentData> retrieveDepositDetails(Long id) {
+
+try{	
+	context.authenticatedUser();
+	DepositMapper mapper = new DepositMapper();
+
+	String sql = "select " + mapper.schema();
+
+	return this.jdbcTemplate.query(sql, mapper, new Object[] {id});
+}catch(EmptyResultDataAccessException accessException){
+	return null;
+}
+
+}
+
+private static final class DepositMapper implements RowMapper<PaymentData> {
+
+	public String schema() {
+		return "bdr.id as id, bdr.transaction_date as transactionDate, bdr.debit_amount as debitAmount from b_deposit_refund bdr "+
+				"where bdr.client_id = ? and transaction_type = 'Deposit' and bdr.payment_id is NULL";
+
+	}
+
+
+	@Override
+	public PaymentData mapRow(final ResultSet rs,@SuppressWarnings("unused") final int rowNum)
+			throws SQLException {
+
+		Long id = rs.getLong("id");
+		Date transactionDate=rs.getDate("transactionDate");
+		BigDecimal debitAmount=rs.getBigDecimal("debitAmount");
+		return new PaymentData(id, transactionDate, debitAmount);
+
+	}
+}
 
 
 }

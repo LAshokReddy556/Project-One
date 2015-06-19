@@ -76,15 +76,13 @@ public class OrderDetailsReadPlatformServicesImpl implements OrderDetailsReadPla
 				     " JOIN b_client_address ca LEFT JOIN b_state s ON ca.state = s.state_name LEFT JOIN b_country con ON ca.country = con.country_name" +
 				     " WHERE da.is_deleted = 'n' AND ca.address_key = 'PRIMARY' AND da.plan_id = ? AND c.billfrequency_code =? " +
 				     " AND ca.client_id = ? AND (pd.state_id =ifnull((SELECT DISTINCT c.id FROM b_plan_pricing a, b_priceregion_detail b, b_state c," +
-				     "  b_charge_codes cc,b_client_address d" +
-				     " WHERE b.priceregion_id = a.price_region_id AND cc.charge_code = a.charge_code AND b.state_id = c.id   AND a.price_region_id = b.priceregion_id " +
-				     " AND d.state = c.state_name AND d.address_key = 'PRIMARY' AND d.client_id = ? and a.plan_id=? AND cc.billfrequency_code =?),0)" +
-				     " AND pd.country_id = ifnull( (SELECT DISTINCT c.id FROM b_plan_pricing a, b_priceregion_detail b, b_country c,b_charge_codes cc, b_client_address d " +
-				     " WHERE b.priceregion_id = a.price_region_id AND b.country_id = c.id AND a.price_region_id = b.priceregion_id " +
-				     " AND c.country_name = d.country AND cc.charge_code = a.charge_code AND d.address_key = 'PRIMARY' AND d.client_id = ? AND a.plan_id = ? " +
-				     "AND cc.billfrequency_code =?),0))" +
+				     " b_charge_codes cc,b_client_address d" +
+				     " WHERE b.priceregion_id = a.price_region_id  AND cc.charge_code = a.charge_code AND  b.state_id = c.id   AND a.price_region_id = b.priceregion_id " +
+				     " AND d.state = c.state_name AND d.address_key = 'PRIMARY' AND d.client_id = ? and a.plan_id=? AND cc.billfrequency_code = ? ),0)" +
+				     " AND pd.country_id = ifnull( (SELECT DISTINCT c.id FROM b_plan_pricing a, b_priceregion_detail b, b_country c, b_charge_codes cc,b_client_address d " +
+				     " WHERE b.priceregion_id = a.price_region_id AND b.country_id = c.id AND cc.charge_code = a.charge_code AND a.price_region_id = b.priceregion_id " +
+				     " AND c.country_name = d.country AND d.address_key = 'PRIMARY' AND d.client_id = ? AND a.plan_id = ? AND cc.billfrequency_code =  ?),0))" +
 				     " GROUP BY da.id";
-
 			return this.jdbcTemplate.query(sql, mapper, new Object[] { planId,billingFreq,clientId,clientId,planId,billingFreq,clientId,planId,billingFreq});
 
 		} 

@@ -1,7 +1,6 @@
 package org.mifosplatform.workflow.eventactionmapping.service;
 
 
-import java.util.Date;
 import java.util.List;
 
 import org.mifosplatform.cms.eventmaster.domain.EventMaster;
@@ -112,19 +111,6 @@ public class ProcessEventActionServiceImpl implements ProcessEventActionService 
 					if(result!=null){
 						this.billingMasterApiResourse.printInvoice(result.resourceId(),eventActionData.getClientId());
 					}
-						/*JSONObject jsonObj=new JSONObject();
-						jsonObj.put("dateFormat","dd MMMM yyyy");
-						jsonObj.put("locale","en");
-						jsonObj.put("dueDate", dateFormat.format(new Date()));
-						jsonObj.put("message","Statement");
-						parsedCommand = this.fromApiJsonHelper.parse(jsonObj.toString());
-						command = JsonCommand.from(jsonObj.toString(),parsedCommand,this.fromApiJsonHelper,"BILLMASTER",eventActionData.getClientId(), null,
-								null,eventActionData.getClientId(), null, null, null,null, null, null,null);
-			            result = this.billMasterWritePlatformService.createBillMaster(command, command.entityId());
-				           if(result.resourceId() != null){
-				        	  this.billingMasterApiResourse.printInvoice(result.resourceId());
-				        	  this.billingMasterApiResourse.sendBillPathToMsg(result.resourceId());
-				           }*/
 					
 				}catch(Exception exception){
 					
@@ -161,6 +147,12 @@ public class ProcessEventActionServiceImpl implements ProcessEventActionService 
 				eventMaster=this.eventMasterRepository.findOne(eventActionData.getResourceId());
 				eventMaster.setStatus(Integer.valueOf(2));
 				this.eventMasterRepository.saveAndFlush(eventMaster);
+				
+				break;
+				
+			case EventActionConstants.ACTION_SEND_PAYMENT :
+				
+				this.billingMasterApiResourse.printPayment(eventAction.getResourceId(), eventAction.getClientId());
 				
 				break;
 			

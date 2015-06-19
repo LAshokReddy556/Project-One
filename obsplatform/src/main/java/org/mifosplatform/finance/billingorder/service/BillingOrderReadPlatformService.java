@@ -32,4 +32,6 @@ public interface BillingOrderReadPlatformService {
 
 	AgreementData retrieveOfficeChargesCommission(Long id);
 
+	List<Long> listOfInvoices(Long clientId, Long orderId);
+
 }

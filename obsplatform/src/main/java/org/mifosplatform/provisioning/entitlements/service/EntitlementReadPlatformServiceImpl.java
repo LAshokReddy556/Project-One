@@ -96,7 +96,7 @@ public class EntitlementReadPlatformServiceImpl implements
 			return " p.id AS id,p.client_id AS clientId,p.provisioing_system AS provisioingSystem,pr.id AS prdetailsId,pr.service_type as servicetype," +
 					" pr.sent_message AS sentMessage,pr.hardware_id AS hardwareId,pr.request_type AS requestType,o.plan_id AS planId,o.order_no AS orderNo," +
 					" o.id as orderId,o.start_date as startDate,o.end_date as endDate, c.account_no as accountNo, c.email as email," +
-					" c.firstname as firstName,c.lastname as lastName,c.office_id as officeId, u.unique_reference as username,u.password as userPassword," +
+					" c.firstname as firstName,c.lastname as lastName,c.office_id as officeId, u.username as username,u.password as userPassword," +
 					" ifnull(c.fullname, c.firstname) as displayName, ifnull(c.login,c.id) as login, ifnull(c.password,'0000') as password" +
 					" FROM b_process_request_detail pr, b_process_request p " +
 					" LEFT JOIN b_orders o ON o.id = p.order_id LEFT JOIN m_client c ON c.id = p.client_id" +
@@ -425,7 +425,7 @@ public class EntitlementReadPlatformServiceImpl implements
 					" bpr.provisioing_system AS provisioingSystem,bprd.service_id AS serviceId,bprd.id AS prdetailsId," +
 					" bprd.sent_message AS sentMessage, ifnull(bid.provisioning_serialno ,oh.provisioning_serial_number) AS macId," +
 					" ifnull(bid.serial_no ,oh.serial_number) AS deviceId, bprd.request_type AS requestType," +
-					" bcu.zebra_subscriber_id as zebraSubscriberId, bcu.unique_reference as selfcareUsername, bcu.password as selfcarePassword, " +
+					" bcu.zebra_subscriber_id as zebraSubscriberId, bcu.username as selfcareUsername, bcu.password as selfcarePassword, " +
 					" bprm.id as regionId, bprm.priceregion_name as regionName" +
 					" from m_client c " +
 					" left join m_office o on (o.id = c.office_id) " +

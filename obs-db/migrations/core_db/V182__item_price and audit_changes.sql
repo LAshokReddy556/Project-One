@@ -74,7 +74,6 @@ Drop procedure IF EXISTS addInvoiceInDeviceSale;
 
 
 set @id=(select id from b_priceregion_master where priceregion_code='Default'); 
-select @id;
 insert ignore into b_item_price (id,item_id,region_id,price,is_deleted) 
    select null,id,@id,unit_price,'N' from b_item_master;
   

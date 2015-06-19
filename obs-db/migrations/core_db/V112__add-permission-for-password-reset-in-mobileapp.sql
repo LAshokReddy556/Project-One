@@ -10,7 +10,7 @@ insert ignore into m_permission  VALUES (null,'billing','UPDATE_MEDIADEVICE','ME
 
 INSERT ignore INTO `b_charge_codes`(charge_code,charge_description,charge_type,charge_duration,duration_type,tax_inclusive,billfrequency_code) VALUES ('NONE','NONE','0',0,'0',0,'0');
 
-insert ignore into `c_configuration` (`id`,`name`,`enabled`,`value`) values (null,'Active Viewers',1,'2');
+insert ignore into `c_configuration` (`id`,`name`,`enabled`,`value`) values (null,'Active Viewers',0,'2');
 
 insert ignore into `c_configuration` values(null,'Is_Paypal_For_Ios',1,'');
 

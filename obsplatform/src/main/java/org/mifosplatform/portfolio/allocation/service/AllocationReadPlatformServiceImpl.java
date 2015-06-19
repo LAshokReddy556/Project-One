@@ -133,7 +133,7 @@ public class AllocationReadPlatformServiceImpl implements AllocationReadPlatform
 					final String allocationType = rs.getString("allocationType");	
 				
 					
-					return new AllocationDetailsData(id, itemDescription, serialNum, null,null,allocationType);
+					return new AllocationDetailsData(id, itemDescription, serialNum, null,null,allocationType,null,null);
 					}
 			}
 

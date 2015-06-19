@@ -48,6 +48,12 @@ public class FeeMaster extends AbstractPersistable<Long>{
 	@Column(name = "is_deleted", nullable = false)
 	private char deleted = 'N';
 	
+	@Column(name = "item_id")
+	private Long itemId;
+	
+	@Column(name = "is_refundable")
+	private String isRefundable;
+	
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "feeMaster", orphanRemoval = true)
 	private List<FeeDetail> regionPrices = new ArrayList<FeeDetail>();
@@ -55,13 +61,14 @@ public class FeeMaster extends AbstractPersistable<Long>{
 	public FeeMaster(){}
 	
 	public FeeMaster(final String feeCode, final String feeDescription,final String transactionType,
-						final String chargeCode, final BigDecimal defaultFeeAmount) {
+						final String chargeCode, final BigDecimal defaultFeeAmount, final Long itemId, final String isRefundable) {
              this.feeCode=feeCode;
              this.feeDescription=feeDescription;
              this.transactionType=transactionType;
              this.chargeCode=chargeCode;
              this.defaultFeeAmount=defaultFeeAmount;
-
+             this.itemId = itemId;
+             this.isRefundable = isRefundable;
 	}
 
 	public String getFeeCode() {
@@ -153,6 +160,30 @@ public class FeeMaster extends AbstractPersistable<Long>{
 			this.defaultFeeAmount = newValue;
 		}
 		
+		final String itemIdParamName = "itemId";
+		if(command.hasParameter(itemIdParamName)){
+			if(command.isChangeInLongParameterNamed(itemIdParamName, this.itemId)){
+				final Long newValue = command.longValueOfParameterNamed(itemIdParamName);
+				actualChanges.put(itemIdParamName,newValue);
+				this.itemId = newValue;
+			}
+		}else{
+			this.itemId = null;
+		}
+		
+		
+		final String isRefundableParamName = "isRefundable";
+		if(command.hasParameter(isRefundableParamName)){
+			if(command.isChangeInStringParameterNamed(isRefundableParamName, this.isRefundable)){
+				final String newValue = command.stringValueOfParameterNamed(isRefundableParamName);
+				actualChanges.put(isRefundableParamName,newValue);
+				this.isRefundable = newValue;
+			}
+		}else{
+			this.isRefundable = null;
+		}
+		
+		
 		return actualChanges;
 	
 	}
@@ -170,7 +201,10 @@ public class FeeMaster extends AbstractPersistable<Long>{
 		final String transactionType=command.stringValueOfParameterNamed("transactionType");
 		final String chargeCode=command.stringValueOfParameterNamed("chargeCode");
 		final BigDecimal defaultFeeAmount=command.bigDecimalValueOfParameterNamed("defaultFeeAmount");
-		return new FeeMaster(feeCode, feeDescription, transactionType, chargeCode, defaultFeeAmount);
+		final Long itemId = command.longValueOfParameterNamed("itemId");
+		final String isRefundable = command.stringValueOfParameterNamed("isRefundable");
+		//final char isRefundable = command.booleanObjectValueOfParameterNamed("isRefundable")?'Y':'N';
+		return new FeeMaster(feeCode, feeDescription, transactionType, chargeCode, defaultFeeAmount,itemId,isRefundable);
 	}
 	
 	public void addRegionPrices(final FeeDetail feeDetail) {

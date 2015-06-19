@@ -14,7 +14,7 @@ public interface VoucherDetailsRepository extends JpaRepository<VoucherDetails, 
 		JpaSpecificationExecutor<VoucherDetails> {
 	
 	//and voucherDetails.clientId is null
-	@Query("from VoucherDetails voucherDetails where voucherDetails.pinNo =:pinNumber")
+	@Query("from VoucherDetails voucherDetails where voucherDetails.pinNo =:pinNumber and voucherDetails.status = 'NEW' and voucherDetails.isDeleted = 'N'")
 	VoucherDetails findOneByPinNumber(@Param("pinNumber") String pinNumber);
 	
 

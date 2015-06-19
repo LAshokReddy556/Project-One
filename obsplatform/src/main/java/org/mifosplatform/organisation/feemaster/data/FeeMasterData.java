@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.mifosplatform.billing.chargecode.data.ChargesData;
+import org.mifosplatform.logistics.item.data.ItemData;
 import org.mifosplatform.organisation.mcodevalues.data.MCodeData;
 import org.mifosplatform.organisation.region.data.RegionData;
 
@@ -24,8 +25,12 @@ public class FeeMasterData {
 	private FeeMasterData feeMasterData;
 	private Collection<MCodeData> transactionTypeDatas;
 	private List<FeeMasterData> feeMasterRegionPricesDatas;
+	private List<ItemData> itemCodes;
+	private Long itemId; 
+	private String isRefundable;
 	
-	public FeeMasterData(Long id,String feeCode,String feeDescription,String transactionType,String chargeCode,BigDecimal defaultFeeAmount) {
+	public FeeMasterData(Long id,String feeCode,String feeDescription,String transactionType,String chargeCode,
+			BigDecimal defaultFeeAmount, Long itemId, String isRefundable) {
      
 		this.id=id;
 		this.feeCode=feeCode;
@@ -33,17 +38,20 @@ public class FeeMasterData {
 		this.transactionType=transactionType;
 		this.chargeCode=chargeCode;
 		this.defaultFeeAmount=defaultFeeAmount;
-	
-	
+		this.itemId = itemId;
+		this.isRefundable = isRefundable;
+		
 	}
 
 
 
-	public FeeMasterData(Collection<MCodeData> transactionTypeDatas,List<ChargesData> chargeDatas, List<RegionData> regionDatas) {
+	public FeeMasterData(Collection<MCodeData> transactionTypeDatas,List<ChargesData> chargeDatas, List<RegionData> regionDatas,
+			List<ItemData> itemCodes) {
 
 		this.transactionTypeDatas = transactionTypeDatas;
 		this.chargeDatas = chargeDatas;
 		this.regionDatas = regionDatas;
+		this.itemCodes = itemCodes;
 	}
 
 
@@ -59,13 +67,15 @@ public class FeeMasterData {
 
 
 	public FeeMasterData(FeeMasterData feeMasterData, Collection<MCodeData> transactionTypeDatas, 
-			List<ChargesData> chargeDatas, List<RegionData> regionDatas, List<FeeMasterData> feeMasterRegionPricesDatas) {
+			List<ChargesData> chargeDatas, List<RegionData> regionDatas, List<FeeMasterData> feeMasterRegionPricesDatas,
+			List<ItemData> itemCodes) {
 		
 		this.feeMasterData = feeMasterData;
 		this.transactionTypeDatas = transactionTypeDatas;
 		this.chargeDatas = chargeDatas;
 		this.regionDatas = regionDatas;
 		this.feeMasterRegionPricesDatas = feeMasterRegionPricesDatas;
+		this.itemCodes = itemCodes;
 	}
 
 

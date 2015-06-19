@@ -2893,7 +2893,7 @@ public class CommandWrapperBuilder {
 		this.actionName = "DELETE";
 		this.entityName = "PROPERTYMASTER";
 		this.entityId = codeId;
-		this.href = "/propertycodemaster/" +codeId;
+		this.href = "/propertycodemaster/" + codeId;
 		return this;
 	}
 
@@ -2911,6 +2911,29 @@ public class CommandWrapperBuilder {
 		this.entityName = "PAYMENTGATEWAY";
 		this.entityId = null;
 		this.href = "";
+		return this;
+	}
+	
+	public CommandWrapperBuilder createRefundAmount(Long depositId) {
+		this.actionName = "CREATE";
+		this.entityName = "REFUND";
+		this.entityId = depositId;
+		this.href = "/refund/" + depositId;
+		return this;
+	}
+	public CommandWrapperBuilder createDeposite() {
+		this.actionName = "CREATE";
+		this.entityName = "DEPOSIT";
+		this.entityId = null;
+		this.href = "";
+		return this;
+	}
+
+	public CommandWrapperBuilder createDeposit(Long clientId) {
+		this.actionName = "CREATE";
+		this.entityName = "DEPOSIT";
+		this.entityId =clientId;
+		this.href = "/deposit/" + clientId;
 		return this;
 	}
 

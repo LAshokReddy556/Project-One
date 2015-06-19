@@ -173,6 +173,7 @@ public class GenerateBillingOrderServiceImplementation implements GenerateBillin
 					billingOrderCommand.getEndDate());
 
 			// client TaxExemption
+
 			if (tax.getTaxExemption().equalsIgnoreCase("N") && (invoiceTaxCommands != null && !invoiceTaxCommands.isEmpty())) {
 
 				for (InvoiceTaxCommand invoiceTaxCommand : invoiceTaxCommands) {

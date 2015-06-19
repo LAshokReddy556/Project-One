@@ -10,6 +10,7 @@ public class EventActionConstants {
 	public static final String EVENT_CREATE_ORDER="Order Booking";
 	public static final String EVENT_CHANGE_ORDER="change order";
 	public static final String EVENT_ACTIVE_ORDER="Order activation";
+	public static final String EVENT_CHANGE_PLAN ="Change Plan";
 	public static final String EVENT_ORDER_RENEWAL="Order Renewal";
 	public static final String EVENT_CREATE_TICKET="Create Ticket";
 	public static final String EVENT_EDIT_TICKET="Add Comment";
@@ -23,6 +24,7 @@ public class EventActionConstants {
 	public static final String EVENT_DISCONNECTION_ORDER="Order disconnection";
 	public static final String EVENT_RECONNECTION_ORDER="Order reconnection";
 	public static final String EVENT_NOTIFY_PAYMENT="Notify Payment Receipt";
+	public static final String EVENT_SEND_PAYMENT = "Send Payment Receipt";
 	
 	//Actions
 	public static final String ACTION_SEND_MAIL="Send Mail";
@@ -51,6 +53,15 @@ public class EventActionConstants {
 	public static final String ACTION_NOTIFY_DISCONNECTION="Notify Disconnection";
 	public static final String ACTION_NOTIFY_RECONNECTION="Notify Reconnection";
 	public static final String ACTION_NOTIFY_PAYMENT="Notify Payment";
+	public static final String ACTION_SEND_PAYMENT = "Send Payment";
+	
+	public static final String ACTION_NOTIFY_SMS_ACTIVATION="Notify_SMS_Activation";
+	public static final String ACTION_NOTIFY_SMS_DISCONNECTION="Notify_SMS_Disconnection";
+	public static final String ACTION_NOTIFY_SMS_RECONNECTION="Notify_SMS_Reconnection";
+	public static final String ACTION_NOTIFY_SMS_PAYMENT="Notify_SMS_Payment";
+	
+	
+	
 	
 
 }

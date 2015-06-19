@@ -9,7 +9,7 @@ public interface SheduleJobReadPlatformService {
 
 	//List<ScheduleJobData> retrieveSheduleJobDetails();
 
-	List<Long> getClientIds(String query);
+	List<Long> getClientIds(String query, JobParameterData data);
 
 	Long getMessageId(String processParam);
 

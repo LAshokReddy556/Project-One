@@ -20,6 +20,7 @@ public class ProvisioningApiConstants {
 	public static final String REQUEST_RECONNECTION ="RECONNECTION";
 	public static final String REQUEST_RENEWAL_AE ="RENEWAL_AE";
 	public static final String REQUEST_RENEWAL_BE ="RENEWAL_BE";
+	public static final String REQUEST_CHANGE_PLAN="CHANGE_PLAN";
 	public static final String REQUEST_TERMINATION ="TERMINATION";
 	public static final String REQUEST_REACTIVATION ="REACTIVATION";
 	public static final String REQUEST_SUSPENTATION ="SUSPENTATION";

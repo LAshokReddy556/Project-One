@@ -36,7 +36,8 @@ public class PaymentCommandFromApiJsonDeserializer {
 	private final Set<String> supportedParameters = new HashSet<String>(
 			Arrays.asList("id", "clientId", "paymentDate", "paymentCode","amountPaid", "statmentId", "externalId", "dateFormat",
 					"locale", "remarks","receiptNo","chequeNo","chequeDate","bankName","branchName","ispaymentEnable","renewalPeriod",
-					"isChequeSelected","txn_id","cancelRemark","invoiceId","isWalletPayment","isSubscriptionPayment"));
+					"isChequeSelected","txn_id","cancelRemark","invoiceId","isWalletPayment","isSubscriptionPayment",
+					"paymentType","deposit"));
 	
 	private final Set<String> enquireySupportedParameters = new HashSet<String>(
 			Arrays.asList("response", "state", "id", "create_time","intent", "client", "platform", "paypal_sdk_version",

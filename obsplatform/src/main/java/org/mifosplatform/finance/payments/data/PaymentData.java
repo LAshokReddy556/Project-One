@@ -2,6 +2,8 @@ package org.mifosplatform.finance.payments.data;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import org.joda.time.LocalDate;
 
@@ -17,8 +19,13 @@ public class PaymentData {
 	private String receiptNo;
 	private Long id;
 	private BigDecimal availAmount;
-	public PaymentData(final Collection<McodeData> data){
+	private Date transactionDate;
+	private BigDecimal debitAmount;
+	private List<PaymentData> depositDatas;
+	
+	public PaymentData(final Collection<McodeData> data,final List<PaymentData> depositDatas){
 		this.data= data;
+		this.depositDatas = depositDatas;
 	}
 	
 	
@@ -40,6 +47,19 @@ public class PaymentData {
 		this.amountPaid=amount;
 		this.receiptNo=recieptNo;
 		this.availAmount=availAmount;
+	}
+
+
+	public PaymentData(Long id, Date transactionDate, BigDecimal debitAmount) {
+		
+		this.id = id;
+		this.transactionDate = transactionDate;
+		this.debitAmount = debitAmount;
+	}
+
+
+	public PaymentData() {
+		
 	}
 
 
@@ -90,6 +110,11 @@ public class PaymentData {
 
 	public BigDecimal getAvailAmount() {
 		return availAmount;
+	}
+
+
+	public void setAvailAmount(BigDecimal availAmount) {
+		this.availAmount = availAmount;
 	}
 	
 	

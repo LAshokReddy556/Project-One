@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS `b_recurring` (
 
 INSERT IGNORE INTO c_configuration VALUES(null,'sms-configuration',0,'{}','General','By Enabling this flag we can send sms from OBS');
 
-
-
 INSERT IGNORE INTO m_permission VALUES(null,'billing&finance','UPDATECHANGEPAYPALSTATUS_PAYMENTGATEWAY','PAYMENTGATEWAY','UPDATECHANGEPAYPALSTATUS',0);
 
 INSERT IGNORE INTO m_permission VALUES(null,'billing&finance','UPDATEPAYPALPROFILESTATUS_PAYMENTGATEWAY','PAYMENTGATEWAY','UPDATEPAYPALPROFILESTATUS',0);

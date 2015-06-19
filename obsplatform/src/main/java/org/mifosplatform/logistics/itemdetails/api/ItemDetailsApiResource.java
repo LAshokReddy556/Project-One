@@ -19,6 +19,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import org.mifosplatform.billing.servicetransfer.service.ServiceTransferReadPlatformService;
 import org.mifosplatform.commands.domain.CommandWrapper;
 import org.mifosplatform.commands.service.CommandWrapperBuilder;
 import org.mifosplatform.commands.service.PortfolioCommandSourceWritePlatformService;
@@ -37,6 +38,7 @@ import org.mifosplatform.logistics.itemdetails.data.ItemSerialNumberData;
 import org.mifosplatform.logistics.itemdetails.domain.ItemDetailsAllocation;
 import org.mifosplatform.logistics.itemdetails.service.ItemDetailsReadPlatformService;
 import org.mifosplatform.logistics.onetimesale.service.OneTimeSaleReadPlatformService;
+import org.mifosplatform.organisation.feemaster.data.FeeMasterData;
 import org.mifosplatform.organisation.mcodevalues.api.CodeNameConstants;
 import org.mifosplatform.organisation.mcodevalues.data.MCodeData;
 import org.mifosplatform.organisation.mcodevalues.service.MCodeReadPlatformService;
@@ -74,7 +76,7 @@ public class ItemDetailsApiResource {
 	private final DefaultToApiJsonSerializer<ItemData> toApiJsonSerializerForItemData;
 	private final OfficeReadPlatformService officeReadPlatformService;
 	private final OneTimeSaleReadPlatformService oneTimeSaleReadPlatformService;
-	
+	private final ServiceTransferReadPlatformService serviceTransferReadPlatformService;
     
 	@Autowired
 	public ItemDetailsApiResource(final PlatformSecurityContext context,final DefaultToApiJsonSerializer<ItemDetailsData> toApiJsonSerializerForItem,
@@ -84,7 +86,8 @@ public class ItemDetailsApiResource {
 			final DefaultToApiJsonSerializer<ItemSerialNumberData> toApiJsonSerializerForAllocationHardware,
 			final ItemDetailsReadPlatformService itemDetailsReadPlatformService,
 			final DefaultToApiJsonSerializer<ItemData> toApiJsonSerializerForItemData,final OfficeReadPlatformService officeReadPlatformService,
-			final OneTimeSaleReadPlatformService oneTimeSaleReadPlatformService) {
+			final OneTimeSaleReadPlatformService oneTimeSaleReadPlatformService,
+			final ServiceTransferReadPlatformService serviceTransferReadPlatformService) {
 		
 		this.context=context;
 		this.mCodeReadPlatformService=mCodeReadPlatformService;
@@ -98,6 +101,7 @@ public class ItemDetailsApiResource {
 	    this.toApiJsonSerializerForItemData = toApiJsonSerializerForItemData;
 	    this.officeReadPlatformService = officeReadPlatformService;
 	    this.oneTimeSaleReadPlatformService = oneTimeSaleReadPlatformService;
+	    this.serviceTransferReadPlatformService = serviceTransferReadPlatformService;
 	}
 
 	/*
@@ -240,6 +244,8 @@ public class ItemDetailsApiResource {
 		
 			 context.authenticatedUser().validateHasReadPermission(resourceNameForPermissionsAllocation);
 			 final ItemData itemMasterData = this.itemDetailsReadPlatformService.retriveItemDetailsDataBySerialNum(query,clientId);
+			 final List<FeeMasterData> feeMasterData = this.serviceTransferReadPlatformService.retrieveSingleFeeDetails(clientId,"Deposit");
+			 itemMasterData.setFeeMasterData(feeMasterData);
 			 ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 			
 		

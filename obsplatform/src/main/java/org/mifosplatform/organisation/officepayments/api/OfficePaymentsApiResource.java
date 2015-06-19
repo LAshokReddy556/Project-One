@@ -69,7 +69,7 @@ public class OfficePaymentsApiResource {
 		
 		context.authenticatedUser().validateHasReadPermission(RESOURCENAMEFOR_PERMISSIONS);
 		final Collection<McodeData> data = this.readPlatformService.retrievemCodeDetails("Payment Mode");
-		final PaymentData paymentData=new PaymentData(data);
+		final PaymentData paymentData=new PaymentData(data, null);
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, paymentData,RESPONSE_DATA_PARAMETERS);
 	}

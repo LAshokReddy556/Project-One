@@ -19,6 +19,6 @@ public class ConfigurationPropertyNotFoundException extends AbstractPlatformReso
 	private static final long serialVersionUID = 1L;
 
 	public ConfigurationPropertyNotFoundException(final String propertyName) {
-        super("error.msg.configuration.property.invalid", "Configuration property `" + propertyName + "` does not exist", propertyName);
+        super("error.msg.configuration.property.invalid", "Configuration property `" + propertyName + "` does not exist or Disabled.", propertyName);
     }
 }

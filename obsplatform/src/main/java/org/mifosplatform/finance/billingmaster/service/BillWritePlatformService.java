@@ -12,14 +12,12 @@ public interface BillWritePlatformService {
 	
 	CommandProcessingResult updateBillMaster(List<BillDetail> billDetails,BillMaster billMaster, BigDecimal previousBal);
 	
-	/*String generatePdf(BillDetailsData billDetails,List<FinancialTransactionsData> data);*/	
-	
 	void generateStatementPdf(Long billId) throws SQLException;
 
-	String generateInovicePdf(Long billId) throws SQLException;
+	String generateInovicePdf(Long billId) ;
 
-	void sendInvoiceToEmail(String printFileName, Long clientId);
+	String generatePaymentPdf(Long paymentId);
 
-	Long sendStatementToEmail(BillMaster billMaster);
+	void sendPdfToEmail(String printFileName, Long clientId,String templateName);
 
 }

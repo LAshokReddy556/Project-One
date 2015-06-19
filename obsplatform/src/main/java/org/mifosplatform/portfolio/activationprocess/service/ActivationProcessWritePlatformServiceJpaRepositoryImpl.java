@@ -196,7 +196,7 @@ public class ActivationProcessWritePlatformServiceJpaRepositoryImpl implements A
         logger.error(dve.getMessage(), dve);
     }
 
-	//@SuppressWarnings("unused")
+    @Transactional
 	@Override
 	public CommandProcessingResult selfRegistrationProcess(JsonCommand command) {
 
@@ -211,6 +211,7 @@ public class ActivationProcessWritePlatformServiceJpaRepositoryImpl implements A
 			CommandProcessingResult resultClient = null;
 			CommandProcessingResult resultSale = null;
 			CommandProcessingResult resultOrder = null;
+			CommandProcessingResult resultRedemption = null;
 			String device = null;
 			String dateFormat = "dd MMMM yyyy";
 			String activationDate = new SimpleDateFormat(dateFormat).format(DateUtils.getDateOfTenant());
@@ -438,7 +439,23 @@ public class ActivationProcessWritePlatformServiceJpaRepositoryImpl implements A
 
 					} 		
 				}
-  				
+				
+				//redemption creation
+				Configuration isRedemptionconfiguration = configurationRepository.findOneByName(ConfigurationConstants.CONFIG_IS_REDEMPTION);
+				
+				if (isRedemptionconfiguration != null && isRedemptionconfiguration.isEnabled()) {
+					
+					JSONObject redemptionJson = new JSONObject();
+					redemptionJson.put("clientId", resultClient.getClientId());
+					redemptionJson.put("pinNumber",command.stringValueOfParameterNamed("pinNumber"));
+					CommandWrapper commandRequest = new CommandWrapperBuilder().createRedemption().withJson(redemptionJson.toString()).build();
+					resultRedemption = this.portfolioCommandSourceWritePlatformService.logCommandSource(commandRequest);
+					if (resultRedemption == null) {
+						throw new PlatformDataIntegrityException("error.msg.redemption.creation",
+								"Redemption Failed for ClientId:" + resultClient.getClientId(), "Redemption Failed");
+					}
+				}
+				
   				return resultClient;
   				
   			/*}  else {

@@ -14,6 +14,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -27,7 +28,9 @@ import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.mifosplatform.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
+import org.mifosplatform.logistics.item.data.ItemData;
 import org.mifosplatform.logistics.item.service.ItemReadPlatformService;
+import org.mifosplatform.logistics.ownedhardware.service.OwnedHardwareReadPlatformService;
 import org.mifosplatform.organisation.feemaster.data.FeeMasterData;
 import org.mifosplatform.organisation.feemaster.service.FeeMasterReadplatformService;
 import org.mifosplatform.organisation.mcodevalues.api.CodeNameConstants;
@@ -54,12 +57,14 @@ public class FeeMasterApiResource {
 	private final RegionReadPlatformService regionReadPlatformService; 
 	private final MCodeReadPlatformService mCodeReadPlatformService; 
 	private final FeeMasterReadplatformService feeMasterReadplatformService; 
+	private final OwnedHardwareReadPlatformService ownedHardwareReadPlatformService;
 
 	@Autowired
 	public FeeMasterApiResource(final PlatformSecurityContext context,final DefaultToApiJsonSerializer<FeeMasterData> toApiJsonSerializer, 
 			final ApiRequestParameterHelper apiRequestParameterHelper,final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
 			final ItemReadPlatformService itemReadPlatformService,final RegionReadPlatformService regionReadPlatformService,
-			final MCodeReadPlatformService mCodeReadPlatformService,final FeeMasterReadplatformService feeMasterReadplatformService) {
+			final MCodeReadPlatformService mCodeReadPlatformService,final FeeMasterReadplatformService feeMasterReadplatformService,
+			final OwnedHardwareReadPlatformService ownedHardwareReadPlatformService) {
 		
 		        this.context = context;
 		        this.toApiJsonSerializer = toApiJsonSerializer;
@@ -69,14 +74,15 @@ public class FeeMasterApiResource {
 		        this.regionReadPlatformService=regionReadPlatformService;
 		        this.mCodeReadPlatformService=mCodeReadPlatformService;
 		        this.feeMasterReadplatformService=feeMasterReadplatformService;
+		        this.ownedHardwareReadPlatformService = ownedHardwareReadPlatformService;
 		    }
 	
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	public String retrieveAllContracts(@Context final UriInfo uriInfo) {
+	public String retrieveAllContracts(@Context final UriInfo uriInfo,@QueryParam("transactionType") String transType) {
 		context.authenticatedUser().validateHasReadPermission(resourceNameForPermissions);
-		final Collection<FeeMasterData> feeMasterData=this.feeMasterReadplatformService.retrieveAllData();
+		final Collection<FeeMasterData> feeMasterData=this.feeMasterReadplatformService.retrieveAllData(transType);
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, feeMasterData, RESPONSE_DATA_PARAMETERS);
 	}
@@ -90,7 +96,8 @@ public class FeeMasterApiResource {
     final Collection<MCodeData> transactionTypeDatas = this.mCodeReadPlatformService.getCodeValue(CodeNameConstants.TRANSACTION_TYPE);
     final List<ChargesData> chargeDatas = this.itemReadPlatformService.retrieveChargeCode();
 	final List<RegionData> regionDatas = this.regionReadPlatformService.getRegionDetails();
-    final FeeMasterData feeMasterData=new FeeMasterData(transactionTypeDatas,chargeDatas,regionDatas);
+	List<ItemData> itemCodes = this.ownedHardwareReadPlatformService.retriveTemplate();
+    final FeeMasterData feeMasterData=new FeeMasterData(transactionTypeDatas,chargeDatas,regionDatas, itemCodes);
     final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
     return this.toApiJsonSerializer.serialize(settings, feeMasterData, RESPONSE_DATA_PARAMETERS);
     
@@ -108,8 +115,9 @@ public class FeeMasterApiResource {
 	    final List<ChargesData> chargeDatas = this.itemReadPlatformService.retrieveChargeCode();
 		final List<RegionData> regionDatas = this.regionReadPlatformService.getRegionDetails();
 		final List<FeeMasterData> feeMasterRegionPricesDatas = this.feeMasterReadplatformService.retrieveRegionPrice(id);
+		final List<ItemData> itemCodes = this.ownedHardwareReadPlatformService.retriveTemplate();
    		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-   		feeMasterData=new FeeMasterData(feeMasterData,transactionTypeDatas,chargeDatas,regionDatas,feeMasterRegionPricesDatas);
+   		feeMasterData=new FeeMasterData(feeMasterData,transactionTypeDatas,chargeDatas,regionDatas,feeMasterRegionPricesDatas,itemCodes);
    		feeMasterData.setRegionDatas(regionDatas);
    		feeMasterData.setFeeMasterRegionPricesDatas(feeMasterRegionPricesDatas);
    		return this.toApiJsonSerializer.serialize(settings, feeMasterData, RESPONSE_DATA_PARAMETERS);

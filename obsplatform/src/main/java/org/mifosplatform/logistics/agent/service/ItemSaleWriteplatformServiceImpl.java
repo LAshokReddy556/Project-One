@@ -1,6 +1,7 @@
 package org.mifosplatform.logistics.agent.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.mifosplatform.billing.taxmapping.domain.TaxMap;
 import org.mifosplatform.billing.taxmapping.domain.TaxMapRepository;
@@ -63,16 +64,15 @@ public class ItemSaleWriteplatformServiceImpl implements ItemSaleWriteplatformSe
         		throw new PlatformDataIntegrityException("invalid.move.operation", "invalid.move.operation", "invalid.move.operation");
         	}
             final ItemMaster itemMaster=this.itemRepository.findOne(itemSale.getItemId());
-            final TaxMap taxMap=this.taxMapRepository.findOneByChargeCode(itemSale.getChargeCode());
+            final List<TaxMap> taxMaps=this.taxMapRepository.findOneByChargeCode(itemSale.getChargeCode());
           	ItemSaleInvoice invoice=ItemSaleInvoice.fromJson(command);
             BigDecimal taxAmount=BigDecimal.ZERO;
             BigDecimal taxRate=BigDecimal.ZERO;
-            if(taxMap != null){
+           
+            	for(TaxMap taxMap:taxMaps){
             	taxRate=taxMap.getRate();
-            	
             	if(taxMap.getTaxType().equalsIgnoreCase("percentage")){
             		taxAmount=invoice.getChargeAmount().multiply(taxRate.divide(new BigDecimal(100)));
-
             	}else{
             		taxAmount=invoice.getChargeAmount().add(taxRate);
             	}

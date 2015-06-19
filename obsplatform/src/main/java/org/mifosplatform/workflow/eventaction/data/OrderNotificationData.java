@@ -14,10 +14,11 @@ public class OrderNotificationData {
 	private final LocalDate activationDate;
 	private final LocalDate startDate;
 	private final LocalDate endDate;
+	private final String clientPhone;
 	
 	public OrderNotificationData(String firstName, String lastName, String planName, 
 			String emailId, String officeName, String officeEmail, String officePhoneNo,
-			LocalDate activationDate, LocalDate startDate, LocalDate endDate) {
+			LocalDate activationDate, LocalDate startDate, LocalDate endDate, String clientPhone) {
 		
 		// TODO Auto-generated constructor stub
 		this.firstName = firstName;
@@ -30,6 +31,7 @@ public class OrderNotificationData {
 		this.activationDate = activationDate;
 		this.startDate = startDate;
 		this.endDate = endDate;
+		this.clientPhone = clientPhone;
 	}
 
 	public String getFirstName() {
@@ -71,6 +73,9 @@ public class OrderNotificationData {
 	public LocalDate getEndDate() {
 		return endDate;
 	}
-	
+
+	public String getClientPhone() {
+		return clientPhone;
+	}
 
 }

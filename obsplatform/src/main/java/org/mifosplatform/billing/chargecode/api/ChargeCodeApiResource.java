@@ -61,7 +61,6 @@ public class ChargeCodeApiResource {
 	public ChargeCodeApiResource(final PlatformSecurityContext context,final PortfolioCommandSourceWritePlatformService commandSourceWritePlatformService,
 			final DefaultToApiJsonSerializer<ChargeCodeData> toApiJsonSerializer,final ApiRequestParameterHelper apiRequestParameterHelper,
 			final ChargeCodeReadPlatformService chargeCodeReadPlatformService,final ChargeCodeWritePlatformService chargeCodeWritePlatformService) {
-		
 		this.context = context;
 		this.commandSourceWritePlatformService = commandSourceWritePlatformService;
 		this.toApiJsonSerializer = toApiJsonSerializer;

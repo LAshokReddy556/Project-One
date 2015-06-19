@@ -21,5 +21,7 @@ public interface PaymentReadPlatformService {
 	
 	Long getOnlinePaymode(String paymentMode);
 
+	List<PaymentData> retrieveDepositDetails(Long clientId);
+
 
 }

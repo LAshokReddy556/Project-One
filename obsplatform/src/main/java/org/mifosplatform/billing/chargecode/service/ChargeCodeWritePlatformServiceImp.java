@@ -157,7 +157,6 @@ public class ChargeCodeWritePlatformServiceImp implements ChargeCodeWritePlatfor
 		}
 		return chargeCode;
 	}
-
 	@Override
 	public BigDecimal calculateFinalAmount(ChargeCodeData chargeCodeData,Long clientId,Long priceId) {
 		
@@ -186,7 +185,5 @@ public class ChargeCodeWritePlatformServiceImp implements ChargeCodeWritePlatfor
 		}
 		return finalAmount;
 	}
-
-	
 
 }

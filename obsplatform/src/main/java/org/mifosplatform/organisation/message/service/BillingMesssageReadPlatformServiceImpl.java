@@ -172,10 +172,14 @@ public class BillingMesssageReadPlatformServiceImpl implements
 	}
 
 	@Override
-	public List<BillingMessageDataForProcessing> retrieveMessageDataForProcessing() {
+	public List<BillingMessageDataForProcessing> retrieveMessageDataForProcessing(Long id) {
 		
 		final BillingMessageDataForProcessingMapper mapper = new BillingMessageDataForProcessingMapper();
-		final String sql = "select " + mapper.schema();
+		String sql = "select " + mapper.schema();
+		
+		if (id != null) {
+			sql = sql + " and md.id limit " + id;
+		}
 
 		return this.jdbcTemplate.query(sql, mapper, new Object[] {});
 	}

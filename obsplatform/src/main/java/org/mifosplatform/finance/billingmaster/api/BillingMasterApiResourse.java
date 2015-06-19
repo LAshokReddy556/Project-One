@@ -39,6 +39,7 @@ import org.mifosplatform.infrastructure.core.serialization.ApiRequestJsonSeriali
 import org.mifosplatform.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.mifosplatform.infrastructure.core.serialization.FromJsonHelper;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
+import org.mifosplatform.organisation.message.domain.BillingMessageTemplateConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -110,6 +111,29 @@ public class BillingMasterApiResourse {
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, data, RESPONSE_DATA_PARAMETERS);
 	}
+	
+	@GET
+	@Path("{billId}/billdetails")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String getBillDetails(@PathParam("billId") final Long billId, @Context final UriInfo uriInfo) {
+		
+		context.authenticatedUser().validateHasReadPermission(RESOURCENAMEFORPERMISSIONS);
+		final List<BillDetailsData> data = this.billMasterReadPlatformService.retrievegetStatementDetails(billId);
+		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+		return this.ApiJsonSerializer.serialize(settings, data, RESPONSE_DATA_PARAMETERS);
+	}
+
+	@DELETE
+	@Path("{billId}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String cancelBillStatement(@PathParam("billId") final Long billId) {
+		
+		final CommandWrapper commandRequest = new CommandWrapperBuilder().cancelBillStatement(billId).build();
+        final CommandProcessingResult result = this.commandSourceWritePlatformService.logCommandSource(commandRequest);
+        return this.toApiJsonSerializer.serialize(result);
+	}
 
 	@GET
 	@Path("{billId}/print")
@@ -134,18 +158,6 @@ public class BillingMasterApiResourse {
 		 return response.build();
 	}
 	
-	@GET
-	@Path("{billId}/billdetails")
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String getBillDetails(@PathParam("billId") final Long billId, @Context final UriInfo uriInfo) {
-		
-		context.authenticatedUser().validateHasReadPermission(RESOURCENAMEFORPERMISSIONS);
-		final List<BillDetailsData> data = this.billMasterReadPlatformService.retrievegetStatementDetails(billId);
-		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-		return this.ApiJsonSerializer.serialize(settings, data, RESPONSE_DATA_PARAMETERS);
-	}
-	
 	@PUT
 	@Path("/email/{billId}")
 	@Consumes({ MediaType.APPLICATION_JSON })
@@ -158,19 +170,8 @@ public class BillingMasterApiResourse {
 			final String msg = "No Generated Pdf file For This Statement";
 			throw new BillingOrderNoRecordsFoundException(msg, billId);
 		}
-		final Long msgId = this.billWritePlatformService.sendStatementToEmail(billMaster);
-	    return this.toApiJsonSerializer.serialize(CommandProcessingResult.resourceResult(msgId, null));
-	}
-	
-	@DELETE
-	@Path("{billId}")
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String cancelBillStatement(@PathParam("billId") final Long billId) {
-		
-		final CommandWrapper commandRequest = new CommandWrapperBuilder().cancelBillStatement(billId).build();
-        final CommandProcessingResult result = this.commandSourceWritePlatformService.logCommandSource(commandRequest);
-        return this.toApiJsonSerializer.serialize(result);
+	     this.billWritePlatformService.sendPdfToEmail(fileName,billMaster.getClientId(),BillingMessageTemplateConstants.MESSAGE_TEMPLATE_STATEMENT);
+	    return this.toApiJsonSerializer.serialize(CommandProcessingResult.resourceResult(billId, null));
 	}
 	
 	@GET
@@ -178,16 +179,29 @@ public class BillingMasterApiResourse {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response printInvoice(@PathParam("invoiceId") final Long invoiceId, @PathParam("clientId") final Long clientId) {
-		 String printFileName = "";
-		try{
-		 printFileName=this.billWritePlatformService.generateInovicePdf(invoiceId);
 		
-		}catch(SQLException e) {e.printStackTrace();}
+		 String printFileName=this.billWritePlatformService.generateInovicePdf(invoiceId);
 		 final File file = new File(printFileName);
-		 this.billWritePlatformService.sendInvoiceToEmail(printFileName,clientId);
+		 this.billWritePlatformService.sendPdfToEmail(printFileName,clientId,BillingMessageTemplateConstants.MESSAGE_TEMPLATE_INVOICE);
 		 final ResponseBuilder response = Response.ok(file);
 		 response.header("Content-Disposition", "attachment; filename=\"" + printFileName + "\"");
 		 response.header("Content-Type", "application/pdf");
 		 return response.build();
 	}
+	
+	@GET
+	@Path("/payment/{clientId}/{paymentId}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response printPayment(@PathParam("paymentId") final Long paymentId, @PathParam("clientId") final Long clientId) {
+		
+		 String printFileName=this.billWritePlatformService.generatePaymentPdf(paymentId);
+		 final File file = new File(printFileName);
+		 this.billWritePlatformService.sendPdfToEmail(printFileName,clientId,BillingMessageTemplateConstants.MESSAGE_TEMPLATE_PAYMENT);
+		 final ResponseBuilder response = Response.ok(file);
+		 response.header("Content-Disposition", "attachment; filename=\"" + printFileName + "\"");
+		 response.header("Content-Type", "application/pdf");
+		 return response.build();
+	}
+	
 }

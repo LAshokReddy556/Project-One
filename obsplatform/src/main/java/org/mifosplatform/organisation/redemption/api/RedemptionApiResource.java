@@ -57,8 +57,8 @@ public class RedemptionApiResource {
 			String clientId = withChanges.getString("clientId");
 			String txnId = withChanges.getString("pinNumber");
 			
-			if(result != null && result.resourceId() !=null){
-				String resourceId = result.resourceId().toString();
+			if(result != null && result.getClientId() !=null){
+				String resourceId = result.getClientId().toString();
 		
 				if(clientId.equalsIgnoreCase(resourceId)){
 					

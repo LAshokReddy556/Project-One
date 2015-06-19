@@ -6,5 +6,5 @@ import org.mifosplatform.organisation.feemaster.data.FeeMasterData;
 
 public interface ServiceTransferReadPlatformService {
 	
-	List<FeeMasterData> retrieveSingleFeeDetails(Long clientId, String transactionType);
+	List<FeeMasterData> retrieveSingleFeeDetails(Long clientId, String transationType);
 }

@@ -100,6 +100,7 @@ INSERT IGNORE INTO job_parameters VALUES(null, @id, 'reportName', 'COMBO', NULL,
 
 
 
+
 DROP PROCEDURE IF EXISTS proc_office_commission;
 DELIMITER //
 CREATE PROCEDURE proc_office_commission()

@@ -38,9 +38,9 @@ public interface PaymentGatewayRecurringWritePlatformService {
 	public Long updateRecurringBillingTable(String profileId);
 
 	public CommandProcessingResult deleteRecurringBilling(JsonCommand command);
+	
+	public String getRequestParameters(HttpServletRequest request);
 
 	public CommandProcessingResult cardPayment(JsonCommand command);
-
-	public String getRequestParameters(HttpServletRequest request);
 
 }

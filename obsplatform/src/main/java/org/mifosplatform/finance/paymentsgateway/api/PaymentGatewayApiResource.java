@@ -468,7 +468,7 @@ public class PaymentGatewayApiResource {
 	
 	/**
 	 * This method is using for posting data to create payment using paypal
-	 */
+	 *//*
 	 @POST
 	 @Path("paypal")
 	 @Consumes("application/x-www-form-urlencoded")
@@ -570,9 +570,9 @@ public class PaymentGatewayApiResource {
 		   String htmlData = "<a href=\""+returnUrl+"\"> Click On Me </a>" + "<strong>"+ paymentStatus1 + "</Strong>";
 		   return htmlData;   
 	   }
-	 }
+	 }*/
 
-	public String orderBooking(String jsonObject, String date, Long clientId) {
+	/*public String orderBooking(String jsonObject, String date, Long clientId) {
 		
 		try {
 			
@@ -691,12 +691,12 @@ public class PaymentGatewayApiResource {
 			return "failure : Payment Done and Plan Booking Failed with throwing ActivePlansFoundException";
 		}
 		
-	}
+	}*/
 	 
 	 
 	/**
 	 * This method is using for posting data to create payment using Neteller
-	 */
+	 *//*
 	@POST
 	@Path("neteller")
 	@Consumes({ MediaType.APPLICATION_JSON })
@@ -745,7 +745,7 @@ public class PaymentGatewayApiResource {
 			String output = "{\"Result\":\"FAILURE\", \"Description\":\"JsonException\"" + e.getMessage() + "}";
 			return output;
 		}
-	}	 
+	}	 */
 	
 	/**
 	 * This method is using for Handling Paypal IPN Requests. 
@@ -772,7 +772,7 @@ public class PaymentGatewayApiResource {
 			String verifiyMessage = this.paymentGatewayRecurringWritePlatformService.paypalRecurringVerification(request);
 			String txnType = request.getParameter(RecurringPaymentTransactionTypeConstants.RECURRING_TXNTYPE);
 			
-			System.out.println("Transaction Type :" +txnType+ "Result:" + verifiyMessage);
+			System.out.println("Transaction Type :" +txnType+ " , Result:" + verifiyMessage);
 			
 			String requestParameters = this.paymentGatewayRecurringWritePlatformService.getRequestParameters(request);
 			
@@ -789,7 +789,7 @@ public class PaymentGatewayApiResource {
 			if (RecurringPaymentTransactionTypeConstants.RECURRING_VERIFIED.equals(verifiyMessage)) {
 				
 				switch (txnType) {
-
+				
 				case RecurringPaymentTransactionTypeConstants.SUBSCR_SIGNUP:
 				case RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_PROFILE_CREATED:
 					
@@ -867,16 +867,13 @@ public class PaymentGatewayApiResource {
 					
 				case RecurringPaymentTransactionTypeConstants.SUBSCR_FAILED:
 				case RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_FAILED:
-					
-			
-					break;
-					
 				case RecurringPaymentTransactionTypeConstants.SUBSCR_MODIFY:
-					
-					break;
-				
 				case RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SKIPPED:
 					
+					recurringBillingHistory.setClientId(0L);
+					recurringBillingHistory.setObsStatus(RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_UNKNOWN);
+					recurringBillingHistory.setObsDescription("UnDeveloped Request types");
+					this.recurringBillingHistoryRepository.save(recurringBillingHistory);
 					break;
 				
 				case RecurringPaymentTransactionTypeConstants.RECURRING_PAYMENT_SUSPENDED:
@@ -924,7 +921,6 @@ public class PaymentGatewayApiResource {
 			recurringBillingHistory.setObsDescription("IOException throwing.." + stackTraceToString(e));
 			this.recurringBillingHistoryRepository.save(recurringBillingHistory);
 		}
-
 	}
 	
 	private String stackTraceToString(Throwable e) {

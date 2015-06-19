@@ -50,12 +50,16 @@ public SheduleJobReadPlatformServiceImpl(final DataSourcePerTenantService dataSo
 			}
 
 			@Override
-			public List<Long> getClientIds(String query) {
+			public List<Long> getClientIds(String query, JobParameterData data) {
 				try {
 				
 			        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSourcePerTenantService.retrieveDataSource());
 					final ClientIdMapper mapper = new ClientIdMapper();
-					return jdbcTemplate.query(query, mapper, new Object[] { });
+					if(data.isDynamic().equalsIgnoreCase("Y")){
+						return jdbcTemplate.query(query, mapper, new Object[] { });
+						}else{
+							return jdbcTemplate.query(query, mapper, new Object[] { data.getProcessDate() });
+						}
 					} catch (EmptyResultDataAccessException e) {
 					return null;
 					}

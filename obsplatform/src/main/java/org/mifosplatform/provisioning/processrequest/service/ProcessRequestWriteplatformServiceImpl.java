@@ -1,9 +1,11 @@
 package org.mifosplatform.provisioning.processrequest.service;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mifosplatform.finance.billingorder.api.BillingOrderApiResourse;
 import org.mifosplatform.infrastructure.configuration.domain.EnumDomainService;
 import org.mifosplatform.infrastructure.configuration.domain.EnumDomainServiceRepository;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
@@ -65,6 +67,7 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 	  private final ServiceParametersRepository serviceParametersRepository;
 	  private final OrderAddonsRepository orderAddonsRepository;
       private final OrderAssembler orderAssembler;
+      private final BillingOrderApiResourse billingOrderApiResourse;
 	  
 	  
 
@@ -74,7 +77,8 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 	    		final ClientRepository clientRepository,final PlanRepository planRepository,final ActionDetailsReadPlatformService actionDetailsReadPlatformService,
 	    		final ActiondetailsWritePlatformService actiondetailsWritePlatformService,final PlatformSecurityContext context,
 	    		final EnumDomainServiceRepository enumDomainServiceRepository,final ServiceParametersRepository parametersRepository,
-	    		final IpPoolManagementJpaRepository ipPoolManagementJpaRepository,final OrderAddonsRepository orderAddonsRepository) {
+	    		final IpPoolManagementJpaRepository ipPoolManagementJpaRepository,final OrderAddonsRepository orderAddonsRepository,
+	    		final BillingOrderApiResourse billingOrderApiResourse) {
 
 	    	
 	    	    this.context = context;
@@ -90,6 +94,7 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 	    	    this.processRequestRepository=processRequestRepository;
 	    	    this.orderReadPlatformService=orderReadPlatformService;
 	    	    this.enumDomainServiceRepository=enumDomainServiceRepository;
+	    	    this.billingOrderApiResourse = billingOrderApiResourse;
 
 	             
 	    }
@@ -140,15 +145,9 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 						Client client=this.clientRepository.findOne(detailsData.getClientId());
 						
 						switch(detailsData.getRequestType()){
- 						   
-							case ProvisioningApiConstants.REQUEST_ACTIVATION :
 						
-							if (detailsData.getOrderId() != null && detailsData.getOrderId() > 0) {
-								order = this.orderRepository.findOne(detailsData.getOrderId());
-								plan = this.planRepository.findOne(order.getPlanId());
-							}
-							
-							 client=this.clientRepository.findOne(detailsData.getClientId());
+						case ProvisioningApiConstants.REQUEST_ACTIVATION  :
+							 
 							if(detailsData.getRequestType().equalsIgnoreCase(UserActionStatusTypeEnum.ACTIVATION.toString())){
                                 order.setStartDate(DateUtils.getLocalDateOfTenant());
 								order.setStatus(OrderStatusEnumaration.OrderStatusType(StatusTypeEnum.ACTIVE).getId());
@@ -162,6 +161,39 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
 							}
 								
 								break;
+							case ProvisioningApiConstants.REQUEST_RECONNECTION :
+								
+								 //client=this.clientRepository.findOne(detailsData.getClientId());
+								//if(detailsData.getRequestType().equalsIgnoreCase(UserActionStatusTypeEnum.ACTIVATION.toString())){
+	                                order.setStartDate(DateUtils.getLocalDateOfTenant());
+									order.setStatus(OrderStatusEnumaration.OrderStatusType(StatusTypeEnum.ACTIVE).getId());
+									order=this.orderAssembler.setDatesOnOrderActivation(order,DateUtils.getLocalDateOfTenant());
+									client.setStatus(ClientStatus.ACTIVE.getValue());
+									this.orderRepository.saveAndFlush(order);
+									List<ActionDetaislData> actionDetaislDatas=this.actionDetailsReadPlatformService.retrieveActionDetails(EventActionConstants.EVENT_ACTIVE_ORDER);
+									if(actionDetaislDatas.size() != 0){
+											this.actiondetailsWritePlatformService.AddNewActions(actionDetaislDatas,order.getClientId(), order.getId().toString(),null);
+									}
+								//}
+									
+									break;
+									
+							case ProvisioningApiConstants.REQUEST_CHANGE_PLAN :
+								
+								 //client=this.clientRepository.findOne(detailsData.getClientId());
+								//if(detailsData.getRequestType().equalsIgnoreCase(UserActionStatusTypeEnum.ACTIVATION.toString())){
+	                                order.setStartDate(DateUtils.getLocalDateOfTenant());
+									order.setStatus(OrderStatusEnumaration.OrderStatusType(StatusTypeEnum.ACTIVE).getId());
+									order=this.orderAssembler.setDatesOnOrderActivation(order,DateUtils.getLocalDateOfTenant());
+									client.setStatus(ClientStatus.ACTIVE.getValue());
+									this.orderRepository.saveAndFlush(order);
+									actionDetaislDatas=this.actionDetailsReadPlatformService.retrieveActionDetails(EventActionConstants.EVENT_CHANGE_PLAN);
+									if(actionDetaislDatas.size() != 0){
+											this.actiondetailsWritePlatformService.AddNewActions(actionDetaislDatas,order.getClientId(), order.getId().toString(),null);
+									}
+								//}
+									
+									break;		
 								
 							case ProvisioningApiConstants.REQUEST_DISCONNECTION :
 								
@@ -231,6 +263,7 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
                                 	}
                                 	
 								break;
+								
                                 case ProvisioningApiConstants.REQUEST_RENEWAL_AE:
                                 	
                                 	if (detailsData.getOrderId() != null && detailsData.getOrderId() > 0) {
@@ -244,6 +277,14 @@ public class ProcessRequestWriteplatformServiceImpl implements ProcessRequestWri
         								client.setStatus(ClientStatus.ACTIVE.getValue());
         								this.orderRepository.saveAndFlush(order);
 
+        							 if(plan.isPrepaid() == 'Y'){
+        								JSONObject json=new JSONObject(); 
+        							    json.put("dateFormat","dd MMMM yyyy");
+        			        	  		json.put("locale","en");
+        			        	  		json.put("systemDate",new SimpleDateFormat("dd MMMM yyyy").format(order.getStartDate()));
+        			        	  		this.billingOrderApiResourse.retrieveBillingProducts(order.getClientId(),json.toString());	
+        							 }
+								break;
 								
 								default : 
 

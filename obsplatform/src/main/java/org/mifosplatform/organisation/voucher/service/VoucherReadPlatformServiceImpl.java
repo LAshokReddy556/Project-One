@@ -327,7 +327,7 @@ public class VoucherReadPlatformServiceImpl implements
 
 		public String schema() {
 			return " pm.pin_type as pinType, pm.pin_value as pinValue, pm.expiry_date as expiryDate " +
-					" from b_pin_master pm, b_pin_details pd where pd.pin_id = pm.id and pd.pin_no=?";
+					" from b_pin_master pm, b_pin_details pd where pd.pin_id = pm.id and pd.status='NEW' and pd.is_deleted='N' and pd.pin_no=?";
 
 		}
 

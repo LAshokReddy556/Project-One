@@ -9,6 +9,7 @@ import org.joda.time.LocalDate;
 import org.mifosplatform.billing.chargecode.data.ChargesData;
 import org.mifosplatform.billing.discountmaster.data.DiscountMasterData;
 import org.mifosplatform.infrastructure.core.data.EnumOptionData;
+import org.mifosplatform.organisation.feemaster.data.FeeMasterData;
 import org.mifosplatform.organisation.office.data.OfficeData;
 import org.mifosplatform.organisation.region.data.RegionData;
 import org.mifosplatform.organisation.staff.data.StaffData;
@@ -42,6 +43,7 @@ public class ItemData {
 	private String price;
 	private List<ItemData> itemPricesDatas;
 	private Long reorderLevel;
+	private List<FeeMasterData> feeMasterData;
 	
 	public ItemData(Long id, String itemCode, String itemDesc,String itemClass,String units,   String chargeCode, int warranty, BigDecimal unitPrice,
 			Long usedItems,Long availableItems,Long totalItems, Long reorderLevel) {
@@ -61,7 +63,7 @@ public class ItemData {
 	}
 
 	public ItemData(List<ItemData> itemCodeData, ItemData itemData, BigDecimal totalPrice,String quantity, List<DiscountMasterData> discountdata,
-			           List<ChargesData> chargesDatas) {
+			           List<ChargesData> chargesDatas, List<FeeMasterData> feeMasterData) {
 
 		this.itemDatas=itemCodeData;
 		this.id=itemData.getId();
@@ -73,7 +75,7 @@ public class ItemData {
 		this.quantity=quantity;
 		this.chargesData=chargesDatas;
 		this.discountMasterDatas=discountdata;
-		
+		this.feeMasterData = feeMasterData;
 	
 	}
 
@@ -232,6 +234,15 @@ public class ItemData {
 
 	}
 
+	public List<FeeMasterData> getFeeMasterData() {
+		return feeMasterData;
+	}
+
+	public void setFeeMasterData(List<FeeMasterData> feeMasterData) {
+		this.feeMasterData = feeMasterData;
+	}
+
+	
 	
 	
 }

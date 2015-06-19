@@ -51,7 +51,7 @@ public class ServiceMappingData {
 	
 
 	public ServiceMappingData(final Long id, final String serviceCode,final String serviceIndentification, final String status,
-			final String image, final String category, final String subCategory, String provisionSystem,final String sortBy) {
+			final String image, final String category, final String subCategory,final String sortBy, String provisionSystem) {
 		
 		this.id=id;
 		this.serviceCode=serviceCode;

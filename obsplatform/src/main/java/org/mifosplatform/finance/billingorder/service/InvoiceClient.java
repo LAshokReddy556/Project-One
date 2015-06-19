@@ -153,5 +153,28 @@ public class InvoiceClient {
 			return new GenerateInvoiceData(clientId, billingOrderCommands.get(0).getNextBillableDate(),singleInvoice.getInvoiceAmount(), singleInvoice);
 		}
 	}
+	
+	
+	
+	public Invoice onTopUpAutoRenewalInvoice(Long orderId, Long clientId,LocalDate processDate) {
 
-}
+		// Get qualified order complete details
+		List<BillingOrderData> products = this.billingOrderReadPlatformService.retrieveBillingOrderData(clientId, processDate,orderId);
+
+		List<BillingOrderCommand> billingOrderCommands = this.generateBillingOrderService.generatebillingOrder(products);
+			
+		// Invoice
+		Invoice  invoice = this.generateBillingOrderService.generateInvoice(billingOrderCommands);
+
+		// Update order-price
+		this.billingOrderWritePlatformService.updateBillingOrder(billingOrderCommands);
+		System.out.println("TopUp:---------------------"+ billingOrderCommands.get(0).getNextBillableDate());
+
+		// Update Client Balance
+		this.billingOrderWritePlatformService.updateClientBalance(invoice.getInvoiceAmount(), clientId, false);
+
+		return invoice;
+		}
+	}
+
+

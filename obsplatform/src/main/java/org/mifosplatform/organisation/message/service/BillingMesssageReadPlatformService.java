@@ -26,7 +26,7 @@ public interface BillingMesssageReadPlatformService {
 			List<BillingMessageTemplateData> messageparam,
 			BillingMesssageReadPlatformService billingMesssageReadPlatformService);
 
-	List<BillingMessageDataForProcessing> retrieveMessageDataForProcessing();
+	List<BillingMessageDataForProcessing> retrieveMessageDataForProcessing(Long id);
 
 	BillingMessageTemplateData retrieveTemplate();
 

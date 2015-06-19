@@ -21,6 +21,7 @@ import javax.ws.rs.core.UriInfo;
 import org.mifosplatform.billing.chargecode.data.ChargesData;
 import org.mifosplatform.billing.discountmaster.data.DiscountMasterData;
 import org.mifosplatform.billing.discountmaster.service.DiscountReadPlatformService;
+import org.mifosplatform.billing.servicetransfer.service.ServiceTransferReadPlatformService;
 import org.mifosplatform.commands.domain.CommandWrapper;
 import org.mifosplatform.commands.service.CommandWrapperBuilder;
 import org.mifosplatform.commands.service.PortfolioCommandSourceWritePlatformService;
@@ -38,6 +39,7 @@ import org.mifosplatform.logistics.onetimesale.data.AllocationDetailsData;
 import org.mifosplatform.logistics.onetimesale.data.OneTimeSaleData;
 import org.mifosplatform.logistics.onetimesale.service.OneTimeSaleReadPlatformService;
 import org.mifosplatform.logistics.onetimesale.service.OneTimeSaleWritePlatformService;
+import org.mifosplatform.organisation.feemaster.data.FeeMasterData;
 import org.mifosplatform.organisation.office.data.OfficeData;
 import org.mifosplatform.organisation.office.service.OfficeReadPlatformService;
 import org.mifosplatform.portfolio.contract.data.SubscriptionData;
@@ -73,6 +75,7 @@ public class OneTimeSalesApiResource {
 	private final FromJsonHelper fromJsonHelper;
 	private final OfficeReadPlatformService officeReadPlatformService;
 	private final ContractPeriodReadPlatformService contractPeriodReadPlatformService;
+	private final ServiceTransferReadPlatformService serviceTransferReadPlatformService;
 
 	@Autowired
 	public OneTimeSalesApiResource(final PlatformSecurityContext context,final DefaultToApiJsonSerializer<OneTimeSaleData> toApiJsonSerializer,
@@ -80,7 +83,8 @@ public class OneTimeSalesApiResource {
 			final OneTimeSaleWritePlatformService oneTimeSaleWritePlatformService,final OneTimeSaleReadPlatformService oneTimeSaleReadPlatformService,
 			final ItemReadPlatformService itemReadPlatformService,final DiscountReadPlatformService discountReadPlatformService,
 			final OfficeReadPlatformService officeReadPlatformService,final DefaultToApiJsonSerializer<ItemData> defaultToApiJsonSerializer,
-			final FromJsonHelper fromJsonHelper,final ContractPeriodReadPlatformService contractPeriodReadPlatformService) {
+			final FromJsonHelper fromJsonHelper,final ContractPeriodReadPlatformService contractPeriodReadPlatformService,
+			final ServiceTransferReadPlatformService serviceTransferReadPlatformService) {
 
 		this.context = context;
 		this.fromJsonHelper = fromJsonHelper;
@@ -94,6 +98,7 @@ public class OneTimeSalesApiResource {
 		this.oneTimeSaleWritePlatformService = oneTimeSaleWritePlatformService;
 		this.commandSourceWritePlatformService = commandSourceWritePlatformService;
 		this.contractPeriodReadPlatformService = contractPeriodReadPlatformService;
+		this.serviceTransferReadPlatformService = serviceTransferReadPlatformService;
 	}
 
 	@POST
@@ -155,12 +160,13 @@ public class OneTimeSalesApiResource {
 		final List<ItemData> itemCodeData = this.oneTimeSaleReadPlatformService.retrieveItemData();
 		final List<DiscountMasterData> discountdata = this.discountReadPlatformService.retrieveAllDiscounts();
 	    ItemData itemData = this.itemMasterReadPlatformService.retrieveSingleItemDetails(clientId, itemId,region,clientId != null?true:false); // If you pass clientId you can set to 'true' else 'false'
-
 	    if(itemData == null){
 	    	throw new NoItemRegionalPriceFound();
 	    }
 		final List<ChargesData> chargesDatas = this.itemMasterReadPlatformService.retrieveChargeCode();
-		itemData = new ItemData(itemCodeData, itemData, null, null,discountdata, chargesDatas);
+		final List<FeeMasterData> feeMasterData = this.serviceTransferReadPlatformService.retrieveSingleFeeDetails(clientId,"Deposit");
+		
+		itemData = new ItemData(itemCodeData, itemData, null, null,discountdata, chargesDatas, feeMasterData);
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.defaultToApiJsonSerializer.serialize(settings, itemData,RESPONSE_DATA_PARAMETERS);
 	}

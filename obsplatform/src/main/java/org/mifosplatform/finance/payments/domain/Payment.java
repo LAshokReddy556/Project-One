@@ -94,6 +94,7 @@ public class Payment extends AbstractAuditableCustom<AppUser, Long> {
 		this.remarks = remark;
 		this.paymodeId = paymodeId;
 		this.transactionId = transId;
+		if(this.receiptNo != null)
 		this.receiptNo = receiptNo+"_CP";
 		this.invoiceId = invoiceId;
 		this.isWalletPayment = isWalletPayment;

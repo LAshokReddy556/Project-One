@@ -1312,8 +1312,15 @@ public class CommandWrapper {
 			return this.actionName.equalsIgnoreCase("DELETERECURRINGBILLING");
 		}
 
+		public boolean isRefund() {
+			return  this.entityName.equalsIgnoreCase("REFUND");
+		}
+
+		public boolean isDeposit() {
+			return  this.entityName.equalsIgnoreCase("DEPOSIT");
+		}
+
 		public boolean isCardPaymentGateway() {
 			return this.actionName.equalsIgnoreCase("CARD");
 		}
-		
 }

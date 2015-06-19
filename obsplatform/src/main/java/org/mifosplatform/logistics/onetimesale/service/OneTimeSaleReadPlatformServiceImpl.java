@@ -190,9 +190,18 @@ public class OneTimeSaleReadPlatformServiceImpl implements	OneTimeSaleReadPlatfo
 	private static final class AllocationDataMapper implements	RowMapper<AllocationDetailsData> {
 
 		public String schema() {
-			return "  a.id AS id,id.id AS itemDetailId,i.item_description AS itemDescription,a.serial_no AS serialNo,a.allocation_date AS allocationDate" +
+			return "  a.id AS id,id.id AS itemDetailId,id.quality as quality,a.status as hardwareStatus,i.item_description AS itemDescription,a.serial_no AS serialNo,a.allocation_date AS allocationDate" +
 					" FROM b_allocation a, b_item_master i, b_item_detail id WHERE  a.item_master_id = i.id   AND a.is_deleted = 'N' and id.client_id = a.client_id " +
 					"  and id.serial_no = a.serial_no ";
+
+		}
+		
+		public String schemaForUnallocated(Long clientId) {
+			return "  a.id AS id,id.id AS itemDetailId,id.quality as quality,a.status as hardwareStatus,"+
+					" i.item_description AS itemDescription,a.serial_no AS serialNo,a.allocation_date AS allocationDate "+
+					" FROM b_allocation a, b_item_master i, b_item_detail id "+
+					" WHERE  a.item_master_id = i.id "+
+					" and a.client_id = "+clientId+" and id.serial_no = a.serial_no ";
 
 		}
 
@@ -204,8 +213,10 @@ public class OneTimeSaleReadPlatformServiceImpl implements	OneTimeSaleReadPlatfo
 			final String itemDescription = rs.getString("itemDescription");
             final String serialNo = rs.getString("serialNo");
 		    final LocalDate allocationDate=JdbcSupport.getLocalDate(rs,"allocationDate");
+		    final String quality = rs.getString("quality");
+		    final String hardwareStatus = rs.getString("hardwareStatus");
 		    
-			return new AllocationDetailsData(id,itemDescription,serialNo,allocationDate,itemDetailId,null);
+			return new AllocationDetailsData(id,itemDescription,serialNo,allocationDate,itemDetailId,null,quality,hardwareStatus);
 
 		}
 	}
@@ -228,5 +239,16 @@ public class OneTimeSaleReadPlatformServiceImpl implements	OneTimeSaleReadPlatfo
 		}
 	
 	}
+	
+	@Override
+	public List<AllocationDetailsData> retrieveUnAllocationDetails(final Long orderId, final Long clientId) {
+		
+		this.context.authenticatedUser();
+		final AllocationDataMapper mapper = new AllocationDataMapper();
+		final String sql = "select " + mapper.schemaForUnallocated(clientId)+ " and a.order_id=? ";
+
+		return this.jdbcTemplate.query(sql, mapper, new Object[] { orderId });
+	}
+	
 	}
 

@@ -53,6 +53,9 @@ public class BillingMessage extends AbstractAuditableCustom<AppUser, Long> {
 	@Column(name = "attachment")
 	private String attachment;
 	
+	@Column(name = "description")
+	private String description;
+	
 	@ManyToOne
     @JoinColumn(name="msgtemplate_id")
     private BillingMessageTemplate billingMessageTemplate;
@@ -163,6 +166,14 @@ public class BillingMessage extends AbstractAuditableCustom<AppUser, Long> {
 		this.attachment = attachment;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public BillingMessage(final String header, final String body, final String footer,
 			final  String messageFrom, final String messageTo, final String subject,
 			final String status, final Long templateId, 

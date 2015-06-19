@@ -140,6 +140,15 @@ public class Invoice extends AbstractAuditableCustom<AppUser,Long>{
 		this.dueAmount=this.dueAmount.subtract(amountPaid);
 		
 	}
+	
+	public BigDecimal getDueAmount() {
+		return dueAmount;
 	}
+
+	public void setDueAmount(BigDecimal dueAmount) {
+		this.dueAmount = dueAmount;
+	}
+	
+}
 
 

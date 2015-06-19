@@ -1,6 +1,7 @@
 package org.mifosplatform.billing.discountmaster.serialization;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import org.mifosplatform.infrastructure.core.serialization.FromJsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
@@ -31,7 +33,8 @@ public final class DiscountCommandFromApiJsonDeserializer {
 	 * The parameters supported for this command.
 	 */
 	private final Set<String> supportedParameters = new HashSet<String>(Arrays.asList("discountCode", "discountDescription",
-					"discountType", "discountRate", "startDate", "discountStatus","locale", "dateFormat"));
+					"discountType", "discountRate", "startDate", "discountStatus","locale", "dateFormat",
+					"discountPrices","categoryId"));
 	private final FromJsonHelper fromApiJsonHelper;
 
 	@Autowired
@@ -69,14 +72,34 @@ public final class DiscountCommandFromApiJsonDeserializer {
 		final String discountType = fromApiJsonHelper.extractStringNamed("discountType", element);
 		baseDataValidator.reset().parameter("discountType").value(discountType).notBlank();
 		
-		final Integer discountRate = fromApiJsonHelper.extractIntegerWithLocaleNamed("discountRate", element);
-		baseDataValidator.reset().parameter("discountRate").value(discountRate).notNull();
+	/*	final Integer discountRate = fromApiJsonHelper.extractIntegerWithLocaleNamed("discountRate", element);
+		baseDataValidator.reset().parameter("discountRate").value(discountRate).notNull();*/
 		
 		final String discountStatus = fromApiJsonHelper.extractStringNamed("discountStatus",element);
 		baseDataValidator.reset().parameter("discountStatus").value(discountStatus).notBlank();
+		
+		final JsonArray discountPricesArray = fromApiJsonHelper.extractJsonArrayNamed("discountPrices", element);
+        String[] discountPrices = null;
+        discountPrices = new String[discountPricesArray.size()];
+        final int itemPricesArraySize = discountPricesArray.size();
+	    baseDataValidator.reset().parameter("discountPrices").value(itemPricesArraySize).integerGreaterThanZero();
+        
+	    if(itemPricesArraySize > 0){
+	    for(int i = 0; i < discountPricesArray.size(); i++){
+	    	discountPrices[i] = discountPricesArray.get(i).toString();
+	    }
+	    for (final String discountPrice : discountPrices) {
+	    	
+	    	final JsonElement attributeElement = fromApiJsonHelper.parse(discountPrice);
+	    	final BigDecimal price = fromApiJsonHelper.extractBigDecimalNamed("discountRate", attributeElement, fromApiJsonHelper.extractLocaleParameter(attributeElement.getAsJsonObject()));
+	    	baseDataValidator.reset().parameter("discountRate").value(price).notNull();
+	    	
+	    	final Long categoryId = fromApiJsonHelper.extractLongNamed("categoryId", attributeElement);
+	    	baseDataValidator.reset().parameter("categoryId").value(categoryId).notNull();
+		  }
+        }
 
 		throwExceptionIfValidationWarningsExist(dataValidationErrors);
-
 	}
 
 

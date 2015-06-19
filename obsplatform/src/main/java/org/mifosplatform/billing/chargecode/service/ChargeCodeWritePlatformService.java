@@ -13,9 +13,8 @@ import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 public interface ChargeCodeWritePlatformService {
 
 	 CommandProcessingResult createChargeCode(JsonCommand command);
-
+	
 	 CommandProcessingResult updateChargeCode(JsonCommand command,Long chargeCodeId);
-
-
-	BigDecimal calculateFinalAmount(ChargeCodeData chargeCodeData,Long clientId, Long priceId);
+	
+	 BigDecimal calculateFinalAmount(ChargeCodeData chargeCodeData,Long clientId, Long priceId);
 }

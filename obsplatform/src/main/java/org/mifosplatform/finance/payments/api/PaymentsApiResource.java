@@ -101,7 +101,8 @@ public class PaymentsApiResource {
 	public String retrieveDetailsForPayments(@QueryParam("clientId") final Long clientId,@Context final UriInfo uriInfo) {
 		context.authenticatedUser().validateHasReadPermission(RESOURCENAMEFORPERMISSIONS);
 		final Collection<McodeData> data = this.readPlatformService.retrievemCodeDetails("Payment Mode");
-		final PaymentData paymentData=new PaymentData(data);
+		final List<PaymentData> depositDatas = this.readPlatformService.retrieveDepositDetails(clientId);
+		final PaymentData paymentData=new PaymentData(data, depositDatas);
 		final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, paymentData,RESPONSE_DATA_PARAMETERS);
 

@@ -1,18 +1,25 @@
 package org.mifosplatform.billing.discountmaster.domain;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.joda.time.LocalDate;
 import org.mifosplatform.infrastructure.core.api.JsonCommand;
+import org.mifosplatform.logistics.item.domain.ItemPrice;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 /**
@@ -45,6 +52,10 @@ public class DiscountMaster extends AbstractPersistable<Long> {
 
 	@Column(name = "is_delete")
 	private char isDelete = 'N';
+	
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "discountMaster", orphanRemoval = true)
+	private List<DiscountDetails> discountDetails = new ArrayList<DiscountDetails>();
 
 	public DiscountMaster() {
 		// TODO Auto-generated constructor stub
@@ -209,7 +220,33 @@ public class DiscountMaster extends AbstractPersistable<Long> {
 			this.isDelete = 'Y';
 			this.discountCode = this.discountCode+"_"+this.getId();
 		}
+		
+		for(DiscountDetails discountDetails: this.discountDetails ){
+			discountDetails.delete();
+		}
 
 	}
+
+	public void addDetails(DiscountDetails discountDetail) {
+         discountDetail.update(this);
+         this.discountDetails.add(discountDetail);
+		
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public char getIsDelete() {
+		return isDelete;
+	}
+
+	public List<DiscountDetails> getDiscountDetails() {
+		return discountDetails;
+	}
+
+	
+	
+	
 
 }

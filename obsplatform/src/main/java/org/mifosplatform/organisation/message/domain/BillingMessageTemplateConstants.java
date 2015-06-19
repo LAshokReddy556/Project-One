@@ -11,6 +11,23 @@ public class BillingMessageTemplateConstants {
 	public static final String MESSAGE_TEMPLATE_TICKET_TEMPLATE="TICKET_TEMPLATE";
 	public static final String MESSAGE_TEMPLATE_CREATE_USER="CREATE USER";
 	public static final String MESSAGE_TEMPLATE_PAYMENT_RECEIPT = "PAYMENT_RECEIPT";
+	public static final String MESSAGE_TEMPLATE_STATEMENT = "STATEMENT_EMAIL";
+	public static final String MESSAGE_TEMPLATE_INVOICE = "INVOICE_EMAIL";
+	public static final String MESSAGE_TEMPLATE_PAYMENT = "PAYMENT_EMAIL";
+	
+	//SMS Configuration constants
+	public static final String MESSAGE_TEMPLATE_SMS_CREATE_SELFCARE = "SMS_CREATE_SELFCARE";
+	public static final String MESSAGE_TEMPLATE_SMS_NEW_SELFCARE_PASSWORD = "SMS_NEW_SELFCARE_PASSWORD";
+	public static final String MESSAGE_TEMPLATE_SMS_PROVISION_CREDENTIALS = "SMS_PROVISION_CREDENTIALS";
+	public static final String MESSAGE_TEMPLATE_SMS_CREATE_USER = "SMS_CREATE_USER";
+	public static final String MESSAGE_TEMPLATE_SMS_PAYMENT_RECEIPT = "SMS_PAYMENT_RECEIPT";
+	public static final String MESSAGE_TEMPLATE_SMS_NEW_CUSTOMER = "SMS_NEW_CUSTOMER";
+	public static final String MESSAGE_TEMPLATE_SMS_NOTIFY_ACTIVATION = "SMS_NOTIFY_ACTIVATION";
+	public static final String MESSAGE_TEMPLATE_SMS_NOTIFY_DISCONNECTION = "SMS_NOTIFY_DISCONNECTION";
+	public static final String MESSAGE_TEMPLATE_SMS_NOTIFY_RECONNECTION = "SMS_NOTIFY_RECONNECTION";
+	public static final String MESSAGE_TEMPLATE_SMS_NOTIFY_PAYMENT = "SMS_NOTIFY_PAYMENT";
+	
+	
 	
 	// Order Notify Events
 	public static final String MESSAGE_TEMPLATE_NOTIFY_ACTIVATION = "NOTIFY ACTIVATION";
@@ -23,6 +40,9 @@ public class BillingMessageTemplateConstants {
 	public static final String MESSAGE_TEMPLATE_STATUS = "N";
 	public static final String MESSAGE_TEMPLATE_EMAIL_FROM = "";
 	public static final char MESSAGE_TEMPLATE_MESSAGE_TYPE = 'E';
+	public static final char MESSAGE_TEMPLATE_SMS_TYPE = 'M';
 	public static final String SELFCARE_REGISTRATION_CONSTANT = "11011";
+
+	
 
 }

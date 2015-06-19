@@ -1,0 +1,1 @@
+insert ignore  into `m_permission`(`id`,`grouping`,`code`,`entity_name`,`action_name`,`can_maker_checker`) values (null,'client&orders','CREATE_DEPOSIT','DEPOSIT','CREATE',0);

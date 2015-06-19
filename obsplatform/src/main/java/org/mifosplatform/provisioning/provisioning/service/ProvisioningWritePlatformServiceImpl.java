@@ -43,6 +43,9 @@ import org.mifosplatform.portfolio.order.domain.UserActionStatusTypeEnum;
 import org.mifosplatform.portfolio.order.service.OrderReadPlatformService;
 import org.mifosplatform.portfolio.plan.domain.Plan;
 import org.mifosplatform.portfolio.plan.domain.PlanRepository;
+import org.mifosplatform.portfolio.planmapping.domain.PlanMapping;
+import org.mifosplatform.portfolio.planmapping.domain.PlanMappingRepository;
+import org.mifosplatform.portfolio.planmapping.execption.PlanMappingNotExist;
 import org.mifosplatform.portfolio.service.domain.ServiceMaster;
 import org.mifosplatform.portfolio.service.domain.ServiceMasterRepository;
 import org.mifosplatform.provisioning.preparerequest.data.PrepareRequestData;
@@ -86,6 +89,7 @@ public class ProvisioningWritePlatformServiceImpl implements ProvisioningWritePl
 	private final ProvisionHelper provisionHelper;
 	private final PlanRepository planRepository;
 	private final OfficeRepository officeRepository;
+	private final PlanMappingRepository planMappingRepository;
 	private final PrepareRequestReadplatformService prepareRequestReadplatformService;
 	private final ItemDetailsRepository inventoryItemDetailsRepository;
 	private final ProvisioningCommandFromApiJsonDeserializer fromApiJsonDeserializer;
@@ -101,7 +105,7 @@ public class ProvisioningWritePlatformServiceImpl implements ProvisioningWritePl
 			final ServiceMasterRepository serviceMasterRepository,final ProvisionHelper provisionHelper,final OfficeRepository officeRepository,
 			final ProcessRequestReadplatformService processRequestReadplatformService,final IpPoolManagementJpaRepository ipPoolManagementJpaRepository,
 			final ProcessRequestWriteplatformService processRequestWriteplatformService,final PlanRepository planRepository,
-			final PrepareRequestReadplatformService prepareRequestReadplatformService) {
+			final PrepareRequestReadplatformService prepareRequestReadplatformService,final PlanMappingRepository planMappingRepository) {
 
 		this.context = context;
 		this.fromJsonHelper = fromJsonHelper;
@@ -114,6 +118,7 @@ public class ProvisioningWritePlatformServiceImpl implements ProvisioningWritePl
 		this.serviceMasterRepository = serviceMasterRepository;
 		this.serviceParametersRepository = parametersRepository;
 		this.processRequestRepository = processRequestRepository;
+		this.planMappingRepository = planMappingRepository;
 		this.prepareRequestReadplatformService=prepareRequestReadplatformService;
 		this.officeRepository = officeRepository;
 		this.orderReadPlatformService = orderReadPlatformService;
@@ -336,6 +341,14 @@ public class ProvisioningWritePlatformServiceImpl implements ProvisioningWritePl
 		HardwareAssociation hardwareAssociation = this.associationRepository.findOneByOrderId(order.getId());
 		Plan plan=this.planRepository.findOne(order.getPlanId());
 		
+		PlanMapping planMapping= this.planMappingRepository.findOneByPlanId(order.getPlanId());
+		
+		
+		
+		if (planMapping == null && plan.getProvisionSystem().equalsIgnoreCase("None")) {
+			throw new PlanMappingNotExist(plan.getPlanCode());
+		}
+		
 		if (hardwareAssociation == null && plan.isHardwareReq() == 'Y') {
 			throw new PairingNotExistException(order.getId());
 		}else if (hardwareAssociation != null) {
@@ -392,6 +405,7 @@ public class ProvisioningWritePlatformServiceImpl implements ProvisioningWritePl
 
 		try {
 			this.context.authenticatedUser();
+			
 			final ProcessRequest processRequest = this.processRequestRepository.findOne(entityId);
 
 			if (processRequest == null) {

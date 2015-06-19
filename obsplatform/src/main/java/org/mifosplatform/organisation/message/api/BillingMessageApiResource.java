@@ -1,5 +1,7 @@
 package org.mifosplatform.organisation.message.api;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,6 +20,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.mifosplatform.commands.domain.CommandWrapper;
 import org.mifosplatform.commands.service.CommandWrapperBuilder;
 import org.mifosplatform.commands.service.PortfolioCommandSourceWritePlatformService;
@@ -27,7 +31,10 @@ import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.mifosplatform.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
+import org.mifosplatform.organisation.message.data.BillingMessageDataForProcessing;
 import org.mifosplatform.organisation.message.data.BillingMessageTemplateData;
+import org.mifosplatform.organisation.message.domain.BillingMessage;
+import org.mifosplatform.organisation.message.domain.BillingMessageRepository;
 import org.mifosplatform.organisation.message.service.BillingMesssageReadPlatformService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -62,6 +69,8 @@ public class BillingMessageApiResource {
 	private final BillingMesssageReadPlatformService billingMesssageReadPlatformService;
 	private final PlatformSecurityContext context;
 	private final ApiRequestParameterHelper apiRequestParameterHelper;
+	private final DefaultToApiJsonSerializer<BillingMessageDataForProcessing> messageApiJsonSerializer;
+	private final BillingMessageRepository messageDataRepository;
 	
 	
 	
@@ -72,13 +81,17 @@ public class BillingMessageApiResource {
 			final DefaultToApiJsonSerializer<BillingMessageTemplateData> toApiJsonSerializer,
 			final BillingMesssageReadPlatformService billingMesssageReadPlatformService,
 			final PlatformSecurityContext context,
-			final ApiRequestParameterHelper apiRequestParameterHelper) {
+			final ApiRequestParameterHelper apiRequestParameterHelper,
+			final DefaultToApiJsonSerializer<BillingMessageDataForProcessing> messageApiJsonSerializer,
+			final BillingMessageRepository messageDataRepository) {
 
 		this.commandsSourceWritePlatformService = commandsSourceWritePlatformService;
 		this.toApiJsonSerializer = toApiJsonSerializer;
 		this.context = context;
 		this.apiRequestParameterHelper = apiRequestParameterHelper;
 		this.billingMesssageReadPlatformService = billingMesssageReadPlatformService;
+		this.messageApiJsonSerializer = messageApiJsonSerializer;
+		this.messageDataRepository = messageDataRepository;
 
 	}
 
@@ -256,6 +269,63 @@ public class BillingMessageApiResource {
 		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
 		
 		return this.toApiJsonSerializer.serialize(result);
+	}
+	
+	@GET
+	@Path("messageData/{id}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	 public String retrieveMessageData(@PathParam("id") final Long id, @Context final UriInfo uriInfo) {
+		
+        context.authenticatedUser().validateHasReadPermission(resourceNameForPermissions);
+        
+        final List<BillingMessageDataForProcessing> templateData = this.billingMesssageReadPlatformService.retrieveMessageDataForProcessing(id); 
+        
+        final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+        
+        return this.messageApiJsonSerializer.serialize(settings, templateData, RESPONSE_PARAMETERS);
+    }
+	
+	@PUT
+	@Path("messageData/{messageId}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String updateMessageData(@PathParam("messageId") final Long messageId, final String requestData) {
+		
+		JSONObject obj = null;
+		try {
+			
+			obj = new JSONObject(requestData);
+			context.authenticatedUser().validateHasReadPermission(resourceNameForPermissions);
+			BillingMessage billingMessage = this.messageDataRepository.findOne(messageId);
+			
+			billingMessage.setStatus(obj.getString("status"));
+			billingMessage.setDescription(obj.getString("description"));
+			
+			this.messageDataRepository.save(billingMessage);
+			
+			obj = new JSONObject();
+			obj.put("result", "Success");
+			obj.put("error", "");
+			return obj.toString();
+			
+		} catch (JSONException e) {
+			String error = "JsonException Throwing and Reason="+ stackTrace(e);
+			obj = new JSONObject();
+			try {
+				obj.put("result", "Failure");
+				obj.put("error", error);
+			} catch (JSONException e1) {
+				e.printStackTrace();
+			}
+			return obj.toString();
+		}	
+	}
+	
+	private String stackTrace(Exception ex){
+		StringWriter errors = new StringWriter();
+		ex.printStackTrace(new PrintWriter(errors));
+		return errors.toString();
 	}
 	
 }

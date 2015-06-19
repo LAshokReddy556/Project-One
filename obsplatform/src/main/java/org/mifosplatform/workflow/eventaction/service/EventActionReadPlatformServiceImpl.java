@@ -165,7 +165,7 @@ public class EventActionReadPlatformServiceImpl implements EventActionReadPlatfo
 	private static final class OrderNotificationMapper implements RowMapper<OrderNotificationData> {
 
 		public String schema() {
-			return " c.firstname as firstName, c.lastname as lastName, p.plan_description as planName, c.email as emailId," +
+			return " c.firstname as firstName, c.lastname as lastName, c.phone as clientPhone, p.plan_description as planName, c.email as emailId," +
 					" mo.name as officeName, boa.email_id as officeEmail, boa.phone_number as officePhoneNo, " +
 					" o.active_date as activationDate, o.start_date as startDate, o.end_date as endDate from m_client c " +
 					" Join m_office mo ON mo.id = c.office_id left Join b_office_address boa ON boa.office_id = mo.id " +
@@ -180,6 +180,7 @@ public class EventActionReadPlatformServiceImpl implements EventActionReadPlatfo
 			String lastName = rs.getString("lastName");
 			String planName = rs.getString("planName");
 			String emailId = rs.getString("emailId");
+			String clientPhone = rs.getString("clientPhone");
 			
 			String officeName = rs.getString("officeName");
 			String officeEmail = rs.getString("officeEmail");
@@ -190,7 +191,7 @@ public class EventActionReadPlatformServiceImpl implements EventActionReadPlatfo
 			LocalDate endDate = JdbcSupport.getLocalDate(rs, "endDate");
 			
 			return new OrderNotificationData(firstName, lastName, planName, emailId, officeName, officeEmail, officePhoneNo, 
-					activationDate, startDate, endDate);
+					activationDate, startDate, endDate, clientPhone);
 
 		}
 	}

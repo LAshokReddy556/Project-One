@@ -96,8 +96,7 @@ public class PriceReadPlatformServiceImpl implements PriceReadPlatformService {
 	}
 
 	@Override
-	public List<ServiceData> retrievePriceDetails(final Long planId,
-			final String region) {
+	public List<ServiceData> retrievePriceDetails(final Long planId,final String region) {
 
 		context.authenticatedUser();
 		String sql = "SELECT p.plan_code AS plan_code,p.is_prepaid as isPrepaid,cp.id as contractId,pm.id AS id,pm.service_code AS serviceCode,"
@@ -108,7 +107,7 @@ public class PriceReadPlatformServiceImpl implements PriceReadPlatformService {
 				+ " (pm.service_code = se.service_code or pm.service_code ='None') and pm.is_deleted='n' and se.is_deleted='n' and  pm.plan_id =? group by pm.id";
 
 		if (region != null) {
-			sql = " SELECT p.plan_code AS plan_code,p.is_prepaid as isPrepaid,cp.id AS contractId,pm.id AS id,pm.service_code AS serviceCode,se.service_description AS serviceDescription,"
+			/*sql = " SELECT p.plan_code AS plan_code,p.is_prepaid as isPrepaid,cp.id AS contractId,pm.id AS id,pm.service_code AS serviceCode,se.service_description AS serviceDescription,"
 					+ " pm.duration AS contract,c.charge_description AS chargeDescription,pm.charge_code AS charge_code,pm.charging_variant AS chargingVariant,pm.discount_id AS discountId,"
 					+ " pm.price AS price,c.billfrequency_code AS billingFrequency,pr.priceregion_name AS priceregion FROM b_plan_master p,b_service se, b_charge_codes c,"
 					+ " b_priceregion_detail pd, b_state s,b_plan_pricing pm LEFT JOIN b_priceregion_master pr ON pm.price_region_id = pr.id LEFT JOIN "
@@ -117,7 +116,22 @@ public class PriceReadPlatformServiceImpl implements PriceReadPlatformService {
 					+ " pm.price_region_id = pd.priceregion_id AND ( s.id = pd.state_id OR (pd.state_id = 0 AND pd.country_id = s.parent_code)) AND "
 					+ " s.state_name = '"
 					+ region
-					+ "' AND pm.plan_id =? GROUP BY pm.id";
+					+ "' AND pm.plan_id =? GROUP BY pm.id";*/
+			sql =" SELECT p.plan_code AS plan_code,p.is_prepaid AS isPrepaid,cp.id AS contractId,p.id as planId,pm.id AS id,pm.service_code AS serviceCode," +
+			     " se.service_description AS serviceDescription,pm.duration AS contract,c.charge_description AS chargeDescription,pm.charge_code AS charge_code," +
+			     " pm.charging_variant AS chargingVariant,pm.discount_id AS discountId,pm.price AS price,c.billfrequency_code AS billingFrequency," +
+			     " pr.priceregion_name AS priceregion" +
+			     " FROM b_plan_master p, b_service se,b_charge_codes c,b_state s,b_plan_pricing pm " +
+			     " LEFT JOIN b_priceregion_master pr ON pm.price_region_id = pr.id" +
+			     " LEFT JOIN b_contract_period cp ON cp.contract_period = pm.duration" +
+			     " LEFT JOIN b_priceregion_detail pd ON pd.priceregion_id = pm.price_region_id" +
+			     " WHERE p.id = pm.plan_id AND pm.charge_code = c.charge_code AND (pm.service_code = se.service_code OR pm.service_code = 'None')" +
+			     " AND pm.is_deleted = 'n' AND se.is_deleted = 'n' " +
+			     " AND (pd.state_id =ifnull((SELECT DISTINCT c.id FROM b_plan_pricing a,b_priceregion_detail b, b_state c WHERE  b.priceregion_id = a.price_region_id" +
+			     " AND a.price_region_id = b.priceregion_id and pm.charge_code = a.charge_code AND c.id = b.state_id AND c.state_name = '"+region+"' AND a.plan_id = "+planId+"),0)" +
+			     " AND pd.country_id =ifnull((SELECT DISTINCT c.id FROM b_plan_pricing a,b_priceregion_detail b,b_country c,  b_state s WHERE b.priceregion_id = a.price_region_id" +
+			     " AND b.country_id = c.id and pm.charge_code = a.charge_code AND   s.parent_code = c.id AND s.state_name = '"+region+"' AND a.price_region_id = b.priceregion_id" +
+			     " AND a.plan_id = "+planId+"),0)) AND pm.plan_id = ? GROUP BY pm.id";	
 		}
 
 		RowMapper<ServiceData> rm = new PriceMapper();
